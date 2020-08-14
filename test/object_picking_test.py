@@ -24,7 +24,9 @@ gripper_robot_ip = "192.168.0.29"  # 왼쪽 팔
 
 
 class Agent:
-
+    """
+    Main class that handles total procedure of test.
+    """
     def __init__(self, rob):
         self.robot = rob
         self.obj_list = [i for i in range(9, 27)]   # 9~26번, 13, 14 제거 (커넥터)
@@ -45,14 +47,14 @@ class Agent:
         self.book_list      = [36, 40]              # 36:purple   40:white
         self.shuffled_list = []
 
-    def set_obj(self, org_list):    # :?
+    def set_obj(self, org_list):
         shuffled_list = copy.deepcopy(org_list)
         random.shuffle(shuffled_list)
         # self.shuffled_list = random.shuffle(self.obj_list)
         # self.shuffled_list = [20, 21, 22] # : 테스트용 잘되는 물체들 Usb_Big, Tape_black, Tape_white
         return shuffled_list
 
-    def run(self):
+    def run_object_picking_test(self):
 
         rob = self.robot
         episode_num = 1
@@ -64,7 +66,7 @@ class Agent:
         obj_list = self.set_obj(self.obj_list)
         for target_obj in obj_list:
 
-            rob.env_img_update()
+            rob.env_img_update()    # update image
 
             target_xyz, target_imgmean, target_pxl = rob.get_obj_pos(target_obj)
             if target_xyz is None:
@@ -87,8 +89,10 @@ class Agent:
             rob.grasp_placing_box(target_obj, target_imgmean, target_xyz)
 
 if __name__ == "__main__":
+    logging.basicConfig(filename='logs/RobotTest.log', level=logging.INFO)
+
     segmentation_model = Seg_detector.Segment()
     robot = robot_env.Robot(camera_robot_ip, gripper_robot_ip, segmentation_model, args.seg_threshold)
 
     agent = Agent(robot)
-    agent.run()
+    agent.run_object_picking_test()

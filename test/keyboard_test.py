@@ -52,7 +52,7 @@ class Agent:
         # self.shuffled_list = [20, 21, 22] # : 테스트용 잘되는 물체들 Usb_Big, Tape_black, Tape_white
         return shuffled_list
 
-    def run(self):
+    def run_keyboard_test(self):
 
         rob = self.robot
         episode_num = 1
@@ -82,4 +82,4 @@ if __name__ == "__main__":
     robot = robot_env.Robot(socket_ip1, socket_ip2, segmentation_model, args.seg_threshold)
 
     agent = Agent(robot)
-    agent.run()
+    agent.run_keyboard_test()

@@ -52,7 +52,7 @@ class Agent:
         # self.shuffled_list = [20, 21, 22] # : 테스트용 잘되는 물체들 Usb_Big, Tape_black, Tape_white
         return shuffled_list
 
-    def run(self):
+    def run_penholder_test(self):
 
         rob = self.robot
         episode_num = 1
@@ -114,4 +114,4 @@ if __name__ == "__main__":
     robot = robot_env.Robot(camera_robot_ip, gripper_robot_ip, segmentation_model, args.seg_threshold)
 
     agent = Agent(robot)
-    agent.run()
+    agent.run_penholder_test()

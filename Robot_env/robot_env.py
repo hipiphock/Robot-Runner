@@ -1,5 +1,6 @@
 # Robot
 import urx
+import logging
 from matplotlib.mlab import prctile
 from urx.robotiq_two_finger_gripper import Robotiq_Two_Finger_Gripper
 from Realsense_env.realsenseForTray_RL import *
@@ -33,7 +34,9 @@ import copy
 
 
 class Robot:
-
+    """
+    Main class for robot handling.
+    """
     def __init__(self, socket_ip1, socket_ip2, segmentation_model=None, threshold=0.60):
 
         self.rob1 = robot_util.Robot_util(socket_ip1)
@@ -189,6 +192,9 @@ class Robot:
         self.use_scatter = True
 
     def env_img_update(self):
+        """
+        Updates image
+        """
         self.rob1.movej(self.cam_position, 1.0, 1.0)
         self.env_img = self.global_cam.capture()
         self.seg_img, self.color_seg_img, _ = self.seg_model.total_run(self.env_img, self.seg_threshold)
@@ -493,14 +499,19 @@ class Robot:
                 # print("target angle & short axis : %f, %f" % (angle, w))
                 return angle, w, h
 
-    # = 20200107
     def scatter(self, target_cls, use_scatter, obj_pos=None, num_scattering=None, type="SHORT", target_pxl=None):
+        """
+        Scattering function
+        The robot scatters given object(?)
+        """
         self.use_scatter = use_scatter
 
         if (use_scatter is False) or (num_scattering is None):
+            logging.info("use_scatter is False")
             print("-->>sys : use_scatter is False")
 
         elif (target_cls is None) or (obj_pos is None) or (target_pxl is None):
+            logging.info("target_pose is None")
             print("!!>>sys : target_pose is None")
         else:
 
@@ -535,8 +546,9 @@ class Robot:
                 #
                 # self.rob2.movel(rob2_preloc, 0.5, 0.5)
                 # self.rob2.movej(starting_pose, 1.0, 1.0)
-                # aaaaaa = 0
+
             else:
+                # Case: There is no need to do scattering
                 print("%s is out of Safe Boundary" % RL_Obj_List[self.target_cls][0], file=sys.stderr)
                 self.obj_pos = None
                 return
@@ -640,64 +652,10 @@ class Robot:
                 # 	self.rob2.movej(self.home, 2, 2)
                 # 	self.gripper2.open_gripper()
 
-    # # = 대체 (현재 안쓰지만 참고용)
-    # def grasp_placing_box_old(self, target_cls):
-    #     pass
-    #     #     # Detecting object pose
-    #     #     self.env_img_update()  # : 세그 / 컬러세그
-    #     #
-    #     #     if target_cls in (np.unique(self.seg_img)):
-    #     #         _, self.obj_pos = self.get_obj_pos(target_cls)
-    #     #     else:
-    #     #         self.obj_pos = None
-    #     #
-    #     #     if self.obj_pos is None:
-    #     #         print("Failed to find %s" % RL_Obj_List[self.target_cls][0], file=sys.stderr)
-    #     #         return
-    #     #
-    #     #     if (self.x_boundary[0] < self.obj_pos[0] < self.x_boundary[1]) and (
-    #     #             self.y_boundary[0] < self.obj_pos[1] < self.y_boundary[1]):
-    #     #         self.goal = np.append(self.obj_pos + np.array([0, 0, self.z_lift]), [0, -3.14, 0])
-    #     #     else:
-    #     #         print("%s is out of Safe Boundary" % RL_Obj_List[self.target_cls][0], file=sys.stderr)
-    #     #         self.obj_pos = None
-    #     #         return
-    #     #
-    #     #     self.rob1.movej(self.initial_pose1, self.acc, self.vel)
-    #     #
-    #     #     obj_angle, w, h = self.angle_detect(target_cls)
-    #     #     obj_angle = np.deg2rad(obj_angle)
-    #     #     print("Target : {}, w : {}".format(RL_Obj_List[self.target_cls][0], w))
-    #     #
-    #     #     gripper_init_pose = 220 - int(round(9.7 * w))
-    #     #     if gripper_init_pose < 13:
-    #     #         gripper_init_pose = 13
-    #     #     if target_cls == 0:
-    #     #         gripper_init_pose = 130
-    #     #     self.gripper1.gripper_action(gripper_init_pose)
-    #     #     rotated_joint_position = np.append(
-    #     #         self.rob1.getj()[:-1], self.rob1.getj()[-1] - obj_angle)
-    #     #     rotated_pose = self.solve_FK(rotated_joint_position)
-    #     #
-    #     #     # Z-Value per Object
-    #     #     self.obj_pos[2] = self.z_tray + 0.01
-    #     #
-    #     #     # Grasping Task
-    #     #     move_list = []
-    #     #     self.goal[3:] = rotated_pose[3:]
-    #     #     move_list.append(self.goal)
-    #     #     move_list.append(np.append(self.obj_pos, rotated_pose[3:]))
-    #     #     self.rob1.movels(move_list, 0.3, 0.3, radius=0.03)
-    #     #     self.gripper1.close_gripper()
-    #     #     self.obj_pos[2] += self.z_lift
-    #     #     goal = np.append(self.obj_pos, self.rob1.getl()[3:])  # Initial point
-    #     #     self.rob1.movel(goal, 1, 1)
-    #     #     self.rob1.movej(self.initial_pose1, self.acc, self.vel)
-
-    # ---- ---- ---- ---- Picking ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-    # = 20191100
     def grasp_placing_box(self, target_cls, target_imgmean, obj_pos=None, ):
-
+        """
+        Main function used for object picking test
+        """
         if obj_pos is None:
             print("!!>>sys : target_pose is None")
             return

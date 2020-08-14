@@ -158,8 +158,8 @@ def clip(pt, y, x):
 
 
 def non_linear_scatter(seg_img, target_cls, angle, w):
-    dilated_img, dilated_img2, neighbored_list, neighbored_list_org = find_neighboring_obj(seg_img, target_cls, angle,
-                                                                                           w)
+    dilated_img, dilated_img2, neighbored_list, neighbored_list_org = 
+            find_neighboring_obj(seg_img, target_cls, angle, w)
     if neighbored_list is None or neighbored_list == []:
         return None
 
@@ -401,9 +401,7 @@ def find_neighboring_obj(seg, target, angle, w):
         kernel_size = 9
         kernel_half = math.trunc(kernel_size / 2)
         kernelorg = np.zeros((kernel_size, kernel_size), np.uint8)
-        kernel = cv2.ellipse(kernelorg, (kernel_half, kernel_half), (kernel_half + 1, kernel_half - 1), angle, 0, 360,
-                             1,
-                             -1)
+        kernel = cv2.ellipse(kernelorg, (kernel_half, kernel_half), (kernel_half + 1, kernel_half - 1), angle, 0, 360, 1, -1)
         target_dilation = np.array(cv2.dilate(binary_image_array, kernel, iterations=3))
 
         # >> check
@@ -630,8 +628,7 @@ def find_neighboring_obj(seg, target, angle, w):
 
 
 def linear_scatter(seg_img, target_cls, angle, w):
-    delated_seg, delated_seg2, neighbored_list, neighbored_list_org = find_neighboring_obj(seg_img, target_cls, angle,
-                                                                                           w)
+    delated_seg, delated_seg2, neighbored_list, neighbored_list_org = find_neighboring_obj(seg_img, target_cls, angle, w)
 
     if neighbored_list is None or neighbored_list == []:
         return
