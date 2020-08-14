@@ -19,8 +19,8 @@ parser.add_argument('--seg_threshold', type=float, default=0.60, help="segmentat
 
 args = parser.parse_args()
 
-socket_ip1 = "192.168.0.52"  # 오른쪽 팔(카메라)
-socket_ip2 = "192.168.0.29"  # 왼쪽 팔
+camera_robot_ip  = "192.168.0.52"  # 오른쪽 팔(카메라)
+gripper_robot_ip = "192.168.0.29"  # 왼쪽 팔
 
 
 class Agent:
@@ -92,54 +92,54 @@ class Agent:
 
                 rob.grasp_placing_box(target_cls, target_imgmean, target_xyz)
 
-            # # ---- ---- ---- ---- Pen ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-            # holder_list = self.set_obj(self.holder_list)
-            # #holder_list = [9]   # : test용, 홀더와 빈, 서랍 Mask-RCNN에 포함시켜야함
-            # h_loc = None
-            # for target_cls in holder_list:
-            # # for target_cls in [5]:
-            # #     target_xyz = None
-            # #     while True:
-            # #         try:
-            # #             rob.env_img_update()
-            # #             target_xyz0, _, target_pxl0 = rob.get_obj_pos(target_cls)
-            # #             rob.env_img_update()
-            # #             target_xyz1, _, target_pxl1 = rob.get_obj_pos(target_cls)
-            # #             rob.env_img_update()
-            # #             target_xyz2, _, target_pxl2 = rob.get_obj_pos(target_cls)
-            # #             target_xyz = (np.array(target_xyz0) + np.array(target_xyz1) + np.array(target_xyz2)) / 3.0
-            # #             break
-            # #         except:
-            # #             print("retrying")
-            #     rob.env_img_update()
-            #
-            #     target_xyz, target_imgmean, target_pxl = rob.get_obj_pos(target_cls)
-            #     if target_xyz is None:
-            #         print("!!>>sys : Can't find {} xyz is None ".format(RL_Obj_List[target_cls][0]))
-            #         continue
-            #
-            #     print("-->>sys : Current Target : {}".format(RL_Obj_List[target_cls][0]))
-            #     h_loc = rob.grasp_holder(target_cls, target_xyz)
-            #     break
-            #
-            # pen_list = self.set_obj(self.pen_list)
-            # for target_cls in pen_list:
-            #
-            #     rob.env_img_update()
-            #
-            #     target_xyz, _, target_pxl = rob.get_obj_pos(target_cls)
-            #     if target_xyz is None:
-            #         print("!!>>sys : Can't find {} xyz is None ".format(RL_Obj_List[target_cls][0]))
-            #         continue
-            #
-            #     print("-->>sys : Current Target : {}".format(RL_Obj_List[target_cls][0]))
-            #     rob.grasp_pen(target_cls, target_xyz)
-            #
-            #     # : 이미지 찍을지 말지 결정 필요
-            #     # : 안찍을시 하드코딩
-            #     rob.placing_toholder(h_loc)
-            #
-            # rob.holder_toplace(h_loc)
+            # ---- ---- ---- ---- Pen ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+            holder_list = self.set_obj(self.holder_list)
+            #holder_list = [9]   # : test용, 홀더와 빈, 서랍 Mask-RCNN에 포함시켜야함
+            h_loc = None
+            for target_cls in holder_list:
+            # for target_cls in [5]:
+            #     target_xyz = None
+            #     while True:
+            #         try:
+            #             rob.env_img_update()
+            #             target_xyz0, _, target_pxl0 = rob.get_obj_pos(target_cls)
+            #             rob.env_img_update()
+            #             target_xyz1, _, target_pxl1 = rob.get_obj_pos(target_cls)
+            #             rob.env_img_update()
+            #             target_xyz2, _, target_pxl2 = rob.get_obj_pos(target_cls)
+            #             target_xyz = (np.array(target_xyz0) + np.array(target_xyz1) + np.array(target_xyz2)) / 3.0
+            #             break
+            #         except:
+            #             print("retrying")
+                rob.env_img_update()
+            
+                target_xyz, target_imgmean, target_pxl = rob.get_obj_pos(target_cls)
+                if target_xyz is None:
+                    print("!!>>sys : Can't find {} xyz is None ".format(RL_Obj_List[target_cls][0]))
+                    continue
+            
+                print("-->>sys : Current Target : {}".format(RL_Obj_List[target_cls][0]))
+                h_loc = rob.grasp_holder(target_cls, target_xyz)
+                break
+            
+            pen_list = self.set_obj(self.pen_list)
+            for target_cls in pen_list:
+            
+                rob.env_img_update()
+            
+                target_xyz, _, target_pxl = rob.get_obj_pos(target_cls)
+                if target_xyz is None:
+                    print("!!>>sys : Can't find {} xyz is None ".format(RL_Obj_List[target_cls][0]))
+                    continue
+            
+                print("-->>sys : Current Target : {}".format(RL_Obj_List[target_cls][0]))
+                rob.grasp_pen(target_cls, target_xyz)
+            
+                # : 이미지 찍을지 말지 결정 필요
+                # : 안찍을시 하드코딩
+                rob.placing_toholder(h_loc)
+            
+            rob.holder_toplace(h_loc)
 
             # ---- ---- ---- ---- Keyboard ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
             key_list = self.set_obj(self.keyboard_list)
@@ -163,8 +163,8 @@ class Agent:
 
 def main():
 
-    segmentation_model = Seg_detector.Segment()
-    robot = robot_env.Robot(socket_ip1, socket_ip2, segmentation_model, args.seg_threshold)
+    segmentation_model = Seg_detector.Segment(   
+    robot = robot_env.Robot(camera_robot_ip, gripper_robot_ip, segmentation_model, args.seg_threshold)
 
     agent = Agent(robot)
     agent.run()

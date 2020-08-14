@@ -63,56 +63,7 @@ class Agent:
 
             print("------------- Test No.{} ------------".format(episode_num))
             rob.reset()
-
-            # ---- ---- ---- ---- Pen ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-            holder_list = self.set_obj(self.holder_list)
-            #holder_list = [9]   # : test용, 홀더와 빈, 서랍 Mask-RCNN에 포함시켜야함
-            h_loc = None
-            for target_cls in holder_list:
-            # for target_cls in [5]:
-            #     target_xyz = None
-            #     while True:
-            #         try:
-            #             rob.env_img_update()
-            #             target_xyz0, _, target_pxl0 = rob.get_obj_pos(target_cls)
-            #             rob.env_img_update()
-            #             target_xyz1, _, target_pxl1 = rob.get_obj_pos(target_cls)
-            #             rob.env_img_update()
-            #             target_xyz2, _, target_pxl2 = rob.get_obj_pos(target_cls)
-            #             target_xyz = (np.array(target_xyz0) + np.array(target_xyz1) + np.array(target_xyz2)) / 3.0
-            #             break
-            #         except:
-            #             print("retrying")
-                rob.env_img_update()
             
-                target_xyz, target_imgmean, target_pxl = rob.get_obj_pos(target_cls)
-                if target_xyz is None:
-                    print("!!>>sys : Can't find {} xyz is None ".format(RL_Obj_List[target_cls][0]))
-                    continue
-            
-                print("-->>sys : Current Target : {}".format(RL_Obj_List[target_cls][0]))
-                h_loc = rob.grasp_holder(target_cls, target_xyz)
-                break
-            
-            pen_list = self.set_obj(self.pen_list)
-            for target_cls in pen_list:
-            
-                rob.env_img_update()
-            
-                target_xyz, _, target_pxl = rob.get_obj_pos(target_cls)
-                if target_xyz is None:
-                    print("!!>>sys : Can't find {} xyz is None ".format(RL_Obj_List[target_cls][0]))
-                    continue
-            
-                print("-->>sys : Current Target : {}".format(RL_Obj_List[target_cls][0]))
-                rob.grasp_pen(target_cls, target_xyz)
-            
-                # : 이미지 찍을지 말지 결정 필요
-                # : 안찍을시 하드코딩
-                rob.placing_toholder(h_loc)
-            
-            rob.holder_toplace(h_loc)
-
             # ---- ---- ---- ---- Keyboard ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
             key_list = self.set_obj(self.keyboard_list)
             for target_cls in key_list:
@@ -125,12 +76,6 @@ class Agent:
                     continue
 
                 rob.grasp_placing_keyboard(target_cls, mean_xy)
-
-            # ---- ---- ---- ---- Connector ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-
-            # ---- ---- ---- ---- End ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-
-            episode_num += 1
 
 
 def main():
