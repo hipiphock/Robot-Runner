@@ -159,16 +159,10 @@ class Agent:
             # ---- ---- ---- ---- End ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
 
             episode_num += 1
-
-
-def main():
-
-    segmentation_model = Seg_detector.Segment(   
-    robot = robot_env.Robot(camera_robot_ip, gripper_robot_ip, segmentation_model, args.seg_threshold)
+            
+if __name__ == "__main__":
+    segmentation_model = Seg_detector.Segment()
+    robot = robot_env.Robot(socket_ip1, socket_ip2, segmentation_model, args.seg_threshold)
 
     agent = Agent(robot)
     agent.run()
-
-
-if __name__ == "__main__":
-    main()

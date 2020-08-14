@@ -63,7 +63,7 @@ class Agent:
 
             print("------------- Test No.{} ------------".format(episode_num))
             rob.reset()
-            
+
             # ---- ---- ---- ---- Keyboard ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
             key_list = self.set_obj(self.keyboard_list)
             for target_cls in key_list:
@@ -77,15 +77,9 @@ class Agent:
 
                 rob.grasp_placing_keyboard(target_cls, mean_xy)
 
-
-def main():
-
+if __name__ == "__main__":
     segmentation_model = Seg_detector.Segment()
     robot = robot_env.Robot(socket_ip1, socket_ip2, segmentation_model, args.seg_threshold)
 
     agent = Agent(robot)
     agent.run()
-
-
-if __name__ == "__main__":
-    main()

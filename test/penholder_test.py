@@ -34,15 +34,15 @@ class Agent:
         obj_list_add=[i for i in range(31,42)]
         self.obj_list+=obj_list_add
 
-        self.holder_list    = [5, 6]                # : 5:green     6:black
-        self.pen_list       = [27, 28, 31, 32, 33]  # : 27:namepen  31:silver_namepen
-                                                    #   28:marker   32:black_marker
-                                                    #
-        self.usb_list       = [29, 30]              # : 29:C-type   30:HDMI
-        self.keyboard_list  = [7, 8]                # : 7:black     8:pink
-        self.board_list     = [34, 35]              # : 34:black    35:pink
-        self.bottle_list    = [38, 39]              # : 38:apricot  39:grey
-        self.book_list      = [36, 40]              # : 36:purple   40:white
+        self.holder_list    = [5, 6]                # 5:green     6:black
+        self.pen_list       = [27, 28, 31, 32, 33]  # 27:namepen  31:silver_namepen
+                                                    # 28:marker   32:black_marker
+                                                    # 32:blue_marker
+        self.usb_list       = [29, 30]              # 29:C-type   30:HDMI
+        self.keyboard_list  = [7, 8]                # 7:black     8:pink
+        self.board_list     = [34, 35]              # 34:black    35:pink
+        self.bottle_list    = [38, 39]              # 38:apricot  39:grey
+        self.book_list      = [36, 40]              # 36:purple   40:white
         self.shuffled_list = []
 
     def set_obj(self, org_list):    # :?
@@ -92,15 +92,9 @@ class Agent:
 
                 rob.grasp_placing_box(target_cls, target_imgmean, target_xyz)
 
-
-def main():
-
+if __name__ == "__main__":
     segmentation_model = Seg_detector.Segment()
     robot = robot_env.Robot(socket_ip1, socket_ip2, segmentation_model, args.seg_threshold)
 
     agent = Agent(robot)
     agent.run()
-
-
-if __name__ == "__main__":
-    main()
