@@ -4,6 +4,7 @@ import cv2
 from sklearn.svm import SVC
 import matplotlib.pyplot as plt
 import math
+from Robot_env.scattering_path import *
 
 
 def find_neighboring_obj(seg, target, angle, w):
@@ -205,6 +206,7 @@ def find_neighboring_obj(seg, target, angle, w):
     bl_img = bl_img + (no1 / 255) * 128
     bl_img = bl_img + (no0 / 255) * 127
 
+    # con_img1, contour1, _ = cv2.findContours(no0, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     con_img1, contour1, _ = cv2.findContours(no0, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     for cnt in contour1:

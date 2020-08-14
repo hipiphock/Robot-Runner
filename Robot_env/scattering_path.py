@@ -5,6 +5,7 @@ from sklearn.svm import SVC
 from matplotlib import pyplot as plt
 import math
 
+
 def split_path(seg_img, neighbored_list, target_path):
     space_idx = []
     space_dist = []
@@ -32,6 +33,7 @@ def split_path(seg_img, neighbored_list, target_path):
 
     return space_idx, space_dist
 
+
 def check_loop(st, ed):
     for y, x in dil(st):
         try:
@@ -41,6 +43,7 @@ def check_loop(st, ed):
             pass
 
     return False
+
 
 def find_start(img):
     temp_img = np.copy(img)
@@ -78,6 +81,7 @@ def find_start(img):
 
     return np.array(k)
 
+
 def dil(st, val=1):
     t = np.array([st + [val, 0]])
     t = np.append(t, [st + [0, val]], axis=0)
@@ -90,6 +94,7 @@ def dil(st, val=1):
     t = np.append(t, [st + [-val, -val]], axis=0)
 
     return t
+
 
 def connect_line(edge, st):
     line = np.copy(st)
@@ -114,6 +119,7 @@ def connect_line(edge, st):
 
     return line
 
+
 def plot_decision_regions(classifier):
     X, Y = np.meshgrid(np.arange(0, 256, 1), np.arange(0, 256, 1))
 
@@ -137,6 +143,7 @@ def plot_decision_regions(classifier):
     edge_path = find_start(edged)
 
     return edge_path
+
 
 def clip(pt, y, x):
     """
@@ -531,7 +538,8 @@ def find_neighboring_obj(seg, target, angle, w):
     bl_img = bl_img + (no1 / 255) * 128
     bl_img = bl_img + (no0 / 255) * 127
 
-    con_img1, contour1, _ = cv2.findContours(no0, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    # con_img1, contour1, _ = cv2.findContours(no0, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) # : opencv3
+    contour1, h = cv2.findContours(no0, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)  # : opencv4
 
     for cnt in contour1:
         rect = cv2.minAreaRect(cnt)
@@ -619,6 +627,7 @@ def find_neighboring_obj(seg, target, angle, w):
         return None, None, None, None
     else:
         return None, None, None, None
+
 
 def linear_scatter(seg_img, target_cls, angle, w):
     delated_seg, delated_seg2, neighbored_list, neighbored_list_org = find_neighboring_obj(seg_img, target_cls, angle,

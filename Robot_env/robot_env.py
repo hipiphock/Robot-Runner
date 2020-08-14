@@ -36,33 +36,13 @@ class Robot:
 
     def __init__(self, socket_ip1, socket_ip2, segmentation_model=None, threshold=0.60):
 
-        # Robot & Gripper
-        # self.rob1 = urx.Robot(socket_ip1, use_rt=True)
-        # time.sleep(1)
-        # self.rob2 = urx.Robot(socket_ip2, use_rt=True)
-        # time.sleep(1)
+        self.rob1 = robot_util.Robot_util(socket_ip1)
+        time.sleep(1)
 
-        print("-->> trying to connect robot")
-        while True:
-            try:
-                self.rob1 = robot_util.Robot_util(socket_ip1)
-                time.sleep(1)
-                break
-            except:
-                print("..>> connecting failed. trying to reconnect robot ...")
+        self.rob2 = robot_util.Robot_util(socket_ip2)
+        time.sleep(1)
 
-        print("-->> trying to connect robot")
-        while True:
-            try:
-                self.rob2 = robot_util.Robot_util(socket_ip2)
-                time.sleep(1)
-                break
-            except:
-                print("..>> connecting failed. trying to reconnect robot ...")
-
-        # self.gripper1 = Robotiq_Two_Finger_Gripper(self.rob1)
         self.gripper1 = self.rob1.gripper
-        # self.gripper2 = Robotiq_Two_Finger_Gripper(self.rob2)
         self.gripper2 = self.rob2.gripper
         self.acc = 1
         self.vel = 1
@@ -84,8 +64,7 @@ class Robot:
         self.initial_pose1 = np.deg2rad([-20.0, -110.0, -70.0, -90.0, 90.0, -20.0])
         self.initial_pose2 = np.deg2rad([20.0, -70.0, 70.0, -90.0, -90.0, 20.0])
         # self.cam_position = np.deg2rad([1.195, -112.025, -6.55, -151.41, 89.66, 2.10])  # : 교체이전
-        self.cam_position = np.deg2rad([0.3209424, -113.09704898, -4.53835016,
-                                        -152.35801451, 89.66131391, 1.21523387])  # : 교체 후
+        self.cam_position = np.deg2rad([0.3209, -113.0970, -4.5383, -152.3580, 89.6613, 1.2152])  # : 교체 후
 
         # Robot Dynamics & Kinematics Parameters
         self.ur5_a = [0, -0.425, -0.39225, 0, 0, 0]
@@ -488,7 +467,8 @@ class Robot:
         cv2.imwrite("./_/test_img/{}__{}_thresholding(empty_img)".format(time_str, target_cls) + ".png", thr)
 
         con_img, contour, _ = cv2.findContours(thr, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)  # ?? 경계선(등고선) 그리기?
-
+        #contour, h = cv2.findContours(thr, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)  # ?? 경계선(등고선) 그리기?
+        #contour, h = cv2.findContours(thr, cv2.findc)  # ?? 경계선(등고선) 그리기?
         # print("finding anlge....")
         for cnt in contour:
             rect = cv2.minAreaRect(cnt)
@@ -497,7 +477,7 @@ class Robot:
             w, h = rect[1]
 
             box_cont = np.int0(cv2.boxPoints(rect))
-            box_img = cv2.drawContours(con_img, [box_cont], 0, 255, 1)
+            box_img = cv2.drawContours(thr, [box_cont], 0, 255, 1)
 
             # >> check
             # cv2.namedWindow("drawContours(box_img)")
@@ -728,20 +708,20 @@ class Robot:
             if (self.x_boundary[0] < target_pose[0] < self.x_boundary[1]) and (
                     self.y_boundary[0] < target_pose[1] < self.y_boundary[1]):
 
-                type_ = "LONG"
-                num_scattering = 5
-                for _ in range(num_scattering):
-                    # Scattering path
-                    angle, w, h = self.angle_detect(target_cls)
-                    temp_seg = np.copy(self.seg_img)
-                    if type_ == "LONG":
-                        path = non_linear_scatter(temp_seg, target_cls, 90 + angle, h)
-                        if path is "linear":
-                            path = linear_scatter(temp_seg, target_cls, 90 + angle, h)
-                    else:
-                        path = non_linear_scatter(temp_seg, target_cls, angle, w)
-                        if path is "linear":
-                            path = linear_scatter(temp_seg, target_cls, angle, w)
+                # type_ = "LONG"
+                # num_scattering = 5
+                # for _ in range(num_scattering):
+                #     # Scattering path
+                #     angle, w, h = self.angle_detect(target_cls)
+                #     temp_seg = np.copy(self.seg_img)
+                #     if type_ == "LONG":
+                #         path = non_linear_scatter(temp_seg, target_cls, 90 + angle, h)
+                #         if path is "linear":
+                #             path = linear_scatter(temp_seg, target_cls, 90 + angle, h)
+                #     else:
+                #         path = non_linear_scatter(temp_seg, target_cls, angle, w)
+                #         if path is "linear":
+                #             path = linear_scatter(temp_seg, target_cls, angle, w)
 
                 back_pose = np.deg2rad([0.0, 0.0, -90.0, -90.0, 0.0, 0.0])
                 # self.rob1.movej(back_pose, 1.0, 1.0)
@@ -793,7 +773,8 @@ class Robot:
                 # # self.rob2.movej(robot_joint, acc=0.2, vel=0.2)
 
                 robot_loc_after = self.rob2.getl()
-                robot_loc_after[2] = copy.deepcopy(robot_loc_after[2]) - 0.25
+                #robot_loc_after[2] = copy.deepcopy(robot_loc_after[2]) - 0.245
+                robot_loc_after[2] = copy.deepcopy(robot_loc_after[2]) - 0.246
                 self.rob2.movel(robot_loc_after, 0.5, 0.5)
 
                 self.gripper2.close_gripper()
@@ -1000,6 +981,8 @@ class Robot:
                 # rob2_loc[2] = rob2_loc[2]
                 self.rob2.movel(rob2_loc, 0.5, 0.5)
 
+
+                # 그립퍼 회전
                 robot_joint = self.rob2.getj()
                 obj_angle, w, h = self.angle_detect(target_cls)
                 temp_angle = copy.deepcopy(robot_joint[5])
@@ -1018,8 +1001,8 @@ class Robot:
                 # # self.rob2.movej(robot_joint, acc=0.2, vel=0.2)
 
                 robot_loc_after = self.rob2.getl()
-                robot_loc_after[0] = copy.deepcopy(robot_loc_after[0]) + 0.03
-                robot_loc_after[1] = copy.deepcopy(robot_loc_after[1]) + 0.03
+                robot_loc_after[0] = copy.deepcopy(robot_loc_after[0]) - 0.05*sin(np.deg2rad(gripper_angle))
+                robot_loc_after[1] = copy.deepcopy(robot_loc_after[1]) - 0.05*cos(np.deg2rad(gripper_angle))
                 robot_loc_after[2] = copy.deepcopy(robot_loc_after[2]) - 0.205
                 self.rob2.movel(robot_loc_after, 0.5, 0.5)
 
@@ -1109,8 +1092,10 @@ class Robot:
                 s_xyz, s_list, s_mean = self.get_obj_pos([start_point[1], start_point[0]], use_imgpoint=True)
                 s_loc = self.rob2.getl()
                 s_loc[0:2] = s_xyz[0:2]
-                s_loc[2] = -0.0645
+                #s_loc[2] = -0.0645
                 self.rob2.movel(s_loc + np.array([0, 0.05, 0, 0, 0, 0]), 0.2, 0.2)
+                s_loc[2] = -0.0645
+                self.rob2.movel(s_loc, 0.2, 0.2)
                 e_xyz, e_list, e_mean = self.get_obj_pos([end_point[1], end_point[0]], use_imgpoint=True)
                 e_loc = self.rob2.getl()
                 e_loc[0:2] = e_xyz[0:2]
@@ -1123,7 +1108,8 @@ class Robot:
                 p_loc[2] = -0.0645
                 self.rob2.movel(p_loc, 0.2, 0.2)
 
-                self.gripper2.value_gripper(204)
+                #self.gripper2.value_gripper(204) #그립퍼가 더 벌어져야함
+                self.gripper2.value_gripper(180)
                 p_loc[2] = -0.0585 + 0.15
                 self.rob2.movel(p_loc, 0.2, 0.2)
                 self.gripper2.open_gripper()
@@ -1139,6 +1125,8 @@ class Robot:
 
                 vertical_loc = self.rob2.getl()
                 vertical_loc[3:6] = [-2.6425233456565188e-05, -2.7206441140413893, -1.5707786178206657]
+                self.rob2.movel(vertical_loc, 0.2, 0.2)
+                vertical_loc[1] = vertical_loc[1] + 0.035
                 self.rob2.movel(vertical_loc, 0.2, 0.2)
 
                 self.gripper2.close_gripper()
@@ -1224,7 +1212,8 @@ class Robot:
                 self.rob1.movej(robot_joint, acc=1.0, vel=1.0)
 
                 robot1_loc_after = self.rob1.getl()
-                robot1_loc_after[2] = copy.deepcopy(robot1_loc_after[2]) - 0.182  # 0.184    # 0.1875
+                #robot1_loc_after[2] = copy.deepcopy(robot1_loc_after[2]) - 0.182  # 0.184    # 0.1875
+                robot1_loc_after[2] = copy.deepcopy(robot1_loc_after[2]) - 0.167
                 self.rob1.movel(robot1_loc_after, 0.5, 0.5)
 
                 self.gripper1.close_gripper()
@@ -1441,8 +1430,10 @@ class Robot:
 
         self.action_gripper_both(80)
 
-        rob_pos1[2] = - 0.11235
-        rob_pos2[2] = - 0.11235
+        # rob_pos1[2] = - 0.11235
+        # rob_pos2[2] = - 0.11235
+        rob_pos1[2] = - 0.11635
+        rob_pos2[2] = - 0.11635
 
         self.rob1.movel(rob_pos1, 0.1, 0.1, False)
         self.rob2.movel(rob_pos2, 0.1, 0.1, False)

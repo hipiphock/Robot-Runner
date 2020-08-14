@@ -28,25 +28,32 @@ import math3d as m3d
 
 class Robot_util:
     def __init__(self, socket_ip):
-        # Robot & Gripper
-        self.rob = urx.Robot(socket_ip, use_rt=True)
-        self.gripper = robotiq_two_finger_gripper.Robotiq_Two_Finger_Gripper(self.rob)
-        self.gripper.open_gripper()
-        # self.urscript_mod = self.gripper._get_new_urscript()
-        # a = self.urscript_mod._get_gripper_status_mod()
+        print("-->> trying to connect robot")
+        while True:
+            try:
+                # Robot & Gripper
+                self.rob = urx.Robot(socket_ip, use_rt=True)
+                self.gripper = robotiq_two_finger_gripper.Robotiq_Two_Finger_Gripper(self.rob)
+                self.gripper.open_gripper()
+                # self.urscript_mod = self.gripper._get_new_urscript()
+                # a = self.urscript_mod._get_gripper_status_mod()
 
-        # Dashboard Control
-        self.Dashboard_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.Dashboard_socket.connect((socket_ip, 29999))
-        self._program_send("")
+                # Dashboard Control
+                self.Dashboard_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                self.Dashboard_socket.connect((socket_ip, 29999))
+                self._program_send("")
 
-        # # Tray, Bluetooth
-        # self.bluetooth = serial.Serial(serial_num, 9600, timeout=1)  # Tray # pre-move
+                # # Tray, Bluetooth
+                # self.bluetooth = serial.Serial(serial_num, 9600, timeout=1)  # Tray # pre-move
 
-        # Robot Dynamics & Kinematics Parameters
-        self.ur5_a = [0, -0.425, -0.39225, 0, 0, 0]
-        self.ur5_d = [0.089159, 0, 0, 0.10915, 0.09465, 0.0823]
-        self.alp = [np.pi / 2, 0, 0, np.pi / 2, -np.pi / 2, 0]
+                # Robot Dynamics & Kinematics Parameters
+                self.ur5_a = [0, -0.425, -0.39225, 0, 0, 0]
+                self.ur5_d = [0.089159, 0, 0, 0.10915, 0.09465, 0.0823]
+                self.alp = [np.pi / 2, 0, 0, np.pi / 2, -np.pi / 2, 0]
+                break
+            except:
+                print("..>> connecting failed. trying to reconnect robot {}...".format(socket_ip))
+
         print('\x1b[1;31;0m' + "-->>Robot util _ {} Ready.".format(socket_ip) + '\x1b[0m', file=sys.stderr)
 
     def chk_STA(self):  # : 20191118
