@@ -22,7 +22,6 @@ args = parser.parse_args()
 camera_robot_ip  = "192.168.0.52"  # 오른쪽 팔(카메라)
 gripper_robot_ip = "192.168.0.29"  # 왼쪽 팔
 
-
 class Agent:
 
     def __init__(self, rob):
