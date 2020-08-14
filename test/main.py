@@ -7,4 +7,9 @@ if __name__ == "__main__":
     robot = robot_env.Robot(socket_ip1, socket_ip2, segmentation_model, args.seg_threshold)
 
     agent = Agent(robot)
-    agent.run()
+    
+    agent.run_object_picking_test()
+    
+    agent.run_penholder_test()
+
+    agent.run_keyboard_test()

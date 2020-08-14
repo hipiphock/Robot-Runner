@@ -480,6 +480,10 @@ class Robot_util:
     #     return action_mod
 
     def movej(self, j, acc=0.1, vel=0.1, wait=True):
+        """
+        Move-joint function.
+        This function moves robot with given joint.
+        """
         is_Exception = False
         try:
             self.rob.movej(j, acc, vel, wait)

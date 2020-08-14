@@ -1,4 +1,5 @@
 import argparse
+import logging
 from builtins import print
 
 from Robot_env import robot_env
@@ -84,9 +85,11 @@ class Agent:
             target_xyz, target_imgmean, target_pxl = rob.get_obj_pos(target_cls)
             if target_xyz is None:
                 print("!!>>sys : Can't find {} xyz is None ".format(RL_Obj_List[target_cls][0]))
+                logging.info("Could not find {}, xyz is None.")
                 continue
         
             print("-->>sys : Current Target : {}".format(RL_Obj_List[target_cls][0]))
+            logging.debug("Current Target: {}".format(RL_Obj_List[target_cls][0]))
             h_loc = rob.grasp_holder(target_cls, target_xyz)
             break
         
@@ -98,9 +101,11 @@ class Agent:
             target_xyz, _, target_pxl = rob.get_obj_pos(target_cls)
             if target_xyz is None:
                 print("!!>>sys : Can't find {} xyz is None ".format(RL_Obj_List[target_cls][0]))
+                logging.info("Could not find {}, xyz is None.")
                 continue
         
             print("-->>sys : Current Target : {}".format(RL_Obj_List[target_cls][0]))
+            logging.debug("Current Target: {}".format(RL_Obj_List[target_cls][0]))
             rob.grasp_pen(target_cls, target_xyz)
         
             # : 이미지 찍을지 말지 결정 필요
@@ -110,6 +115,8 @@ class Agent:
         rob.holder_toplace(h_loc)
 
 if __name__ == "__main__":
+    logging.basicConfig(filename='logs/RobotTest.log', level=logging.INFO)
+
     segmentation_model = Seg_detector.Segment()
     robot = robot_env.Robot(camera_robot_ip, gripper_robot_ip, segmentation_model, args.seg_threshold)
 

@@ -1,4 +1,5 @@
 import argparse
+import logging
 from builtins import print
 
 from Robot_env import robot_env
@@ -71,9 +72,11 @@ class Agent:
             target_xyz, target_imgmean, target_pxl = rob.get_obj_pos(target_obj)
             if target_xyz is None:
                 print("!!>>sys : Can't find {} xyz is None ".format(RL_Obj_List[target_obj][0]))
+                logging.info("Could not find {}, xyz is None".format(RL_Obj_List[target_obj][0]))
                 continue
 
             print("-->>sys : Current Target : {}".format(RL_Obj_List[target_obj][0]))
+            logging.debug("Current Target: {}".format(RL_Obj_List[target_obj][0]))
 
             # if target_obj in [15, 16]:  # :
             #     rob.scatter(target_obj, args.use_scatter, args.num_scattering)

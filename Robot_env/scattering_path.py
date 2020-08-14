@@ -158,6 +158,9 @@ def clip(pt, y, x):
 
 
 def non_linear_scatter(seg_img, target_cls, angle, w):
+    """
+    I don't know what this is...
+    """
     dilated_img, dilated_img2, neighbored_list, neighbored_list_org = 
             find_neighboring_obj(seg_img, target_cls, angle, w)
     if neighbored_list is None or neighbored_list == []:
@@ -386,6 +389,9 @@ def non_linear_scatter(seg_img, target_cls, angle, w):
 
 
 def find_neighboring_obj(seg, target, angle, w):
+    """
+    Returns neightboring object lists of the target.
+    """
     delated_seg = np.copy(seg)
     delated_seg2 = np.copy(seg)
     binary_image_array = np.zeros(shape=(720, 1280), dtype=np.uint8)
@@ -424,8 +430,10 @@ def find_neighboring_obj(seg, target, angle, w):
         kernel_size = 7
         kernel_half = math.trunc(kernel_size / 2)
         kernelorg = np.zeros((kernel_size, kernel_size), np.uint8)
-        kernel = cv2.ellipse(kernelorg, (kernel_half, kernel_half), (kernel_half + 1, kernel_half - 1), angle, 0, 360,
-                             1, -1)
+        kernel = cv2.ellipse(kernelorg, 
+                             (kernel_half, kernel_half), 
+                             (kernel_half + 1, kernel_half - 1), 
+                             angle, 0, 360, 1, -1)
         target_dilation = np.array(cv2.dilate(binary_image_array, kernel, iterations=4))
 
         # >> check
@@ -461,7 +469,10 @@ def find_neighboring_obj(seg, target, angle, w):
         kernel_size = 11
         kernel_half = math.trunc(kernel_size / 2)
         kernelorg = np.zeros((kernel_size, kernel_size), np.uint8)
-        kernel_1 = cv2.ellipse(kernelorg, (kernel_half, kernel_half), (kernel_half, 0), angle, 0, 360, 1, 1)
+        kernel_1 = cv2.ellipse(kernelorg, 
+                               (kernel_half, kernel_half), 
+                               (kernel_half, 0), 
+                               angle, 0, 360, 1, 1)
         target_dilation2 = np.array(cv2.dilate(binary_image_array2, kernel_1, iterations=4))
 
         cv2.namedWindow("kernel_1")
@@ -474,8 +485,10 @@ def find_neighboring_obj(seg, target, angle, w):
         kernel_size2 = 11
         kernel_half2 = math.trunc(kernel_size2 / 2)
         kernelorg2 = np.zeros((kernel_size2, kernel_size2), np.uint8)
-        kernel_2 = cv2.ellipse(kernelorg2, (kernel_half2, kernel_half2), (kernel_half2 - 1, kernel_half2 - 1), angle, 0,
-                               360, 1, -1)
+        kernel_2 = cv2.ellipse(kernelorg2, 
+                               (kernel_half2, kernel_half2), 
+                               (kernel_half2 - 1, kernel_half2 - 1), 
+                               angle, 0, 360, 1, -1)
         target_mod2 = np.array(cv2.dilate(target_dilation2, kernel_2, iterations=1))
 
         cv2.namedWindow("kernel_2")
@@ -496,7 +509,10 @@ def find_neighboring_obj(seg, target, angle, w):
         kernel_size = 9
         kernel_half = math.trunc(kernel_size / 2)
         kernelorg = np.zeros((kernel_size, kernel_size), np.uint8)
-        kernel_1 = cv2.ellipse(kernelorg, (kernel_half, kernel_half), (kernel_half, 0), angle, 0, 360, 1, 1)
+        kernel_1 = cv2.ellipse(kernelorg, 
+                               (kernel_half, kernel_half), 
+                               (kernel_half, 0), 
+                               angle, 0, 360, 1, 1)
         target_dilation2 = np.array(cv2.dilate(binary_image_array2, kernel_1, iterations=3))
 
         cv2.namedWindow("kernel_1")
@@ -509,8 +525,10 @@ def find_neighboring_obj(seg, target, angle, w):
         kernel_size = 9
         kernel_half = math.trunc(kernel_size / 2)
         kernelorg = np.zeros((kernel_size, kernel_size), np.uint8)
-        kernel_2 = cv2.ellipse(kernelorg, (kernel_half, kernel_half), (kernel_half - 1, kernel_half - 1), angle, 0, 360,
-                               1, -1)
+        kernel_2 = cv2.ellipse(kernelorg, 
+                               (kernel_half, kernel_half), 
+                               (kernel_half - 1, kernel_half - 1), 
+                               angle, 0, 360, 1, -1)
         target_mod2 = np.array(cv2.dilate(target_dilation2, kernel_2, iterations=1))
 
         cv2.namedWindow("kernel_2")
@@ -528,16 +546,16 @@ def find_neighboring_obj(seg, target, angle, w):
         cv2.imwrite("{}_target_mod2".format(target) + ".png", img_td2)
     # ---------------------------------------------------
 
-    no0 = binary_image_array.copy()  # 원 물체 세그
-    no1 = target_dilation.copy()  # 팽창 후 물체
-    no2 = target_mod2.copy()  # 검사 할 영역
+    no0 = binary_image_array.copy() # 원 물체 세그
+    no1 = target_dilation.copy()    # 팽창 후 물체
+    no2 = target_mod2.copy()        # 검사 할 영역
 
     bl_img = np.zeros(shape=(256, 256), dtype=np.uint8)
     bl_img = bl_img + (no1 / 255) * 128
     bl_img = bl_img + (no0 / 255) * 127
 
-    # con_img1, contour1, _ = cv2.findContours(no0, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) # : opencv3
-    contour1, h = cv2.findContours(no0, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)  # : opencv4
+    # con_img1, contour1, _ = cv2.findContours(no0, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)   # for opencv3
+    contour1, h = cv2.findContours(no0, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)             # for opencv4
 
     for cnt in contour1:
         rect = cv2.minAreaRect(cnt)
@@ -560,25 +578,25 @@ def find_neighboring_obj(seg, target, angle, w):
     close_obj_index_list2 = []
     n_obj_temp = []
     dilated_target_pointList2 = np.argwhere(target_mod2 == 255)
-    for [y, x] in dilated_target_pointList2:  # 디텍션 영역의 좌표에서
-        label2 = seg[y, x]  # 해당좌표의 세그맨테이션 된 이미지 정보를 라벨로 지정
+    for [y, x] in dilated_target_pointList2:        # 디텍션 영역의 좌표에서
+        label2 = seg[y, x]                          # 해당좌표의 세그맨테이션 된 이미지 정보를 라벨로 지정
 
-        if label2 != target and label2 != 16:  # 라벨과 타겟이 다를거나, 라벨이 배경일 경우
-            close_obj_index_list2.append(label2)  # 근처 오브젝트를 포함 시킴
-            delated_seg2[y, x] = target  # 원 세그멘테이션에 라벨이 타겟&배경과 다른경우를 해당 위치를 타겟값으로 저장
+        if label2 != target and label2 != 16:       # 라벨과 타겟이 다를거나, 라벨이 배경일 경우
+            close_obj_index_list2.append(label2)    # 근처 오브젝트를 포함 시킴
+            delated_seg2[y, x] = target             # 원 세그멘테이션에 라벨이 타겟&배경과 다른경우를 해당 위치를 타겟값으로 저장
 
-    if close_obj_index_list2.__len__() != 0:  # 가까운 오브젝트가 존재할 경우
-        dilated_cls2 = np.unique(delated_seg2)  # 디텍트부분을 타겟으로 확장 후 저장된 포인트 들 중 중복 제거
-        seg_cls = np.unique(seg)  # 세그멘테이션 원 데이터 포인트 들 중 중복 제거
+    if close_obj_index_list2.__len__() != 0:        # 가까운 오브젝트가 존재할 경우
+        dilated_cls2 = np.unique(delated_seg2)      # 디텍트부분을 타겟으로 확장 후 저장된 포인트 들 중 중복 제거
+        seg_cls = np.unique(seg)                    # 세그멘테이션 원 데이터 포인트 들 중 중복 제거
 
-        n_obj2 = np.unique(close_obj_index_list2)  # 근처 오브젝트 중 중복 제거
+        n_obj2 = np.unique(close_obj_index_list2)   # 근처 오브젝트 중 중복 제거
 
         for cls in dilated_cls2:
             seg_cls = np.delete(seg_cls, np.argwhere(seg_cls == cls))  # 세그멘테이션 된 데이터와 다이얼레이션 에서 검출된 데이터를 비교, 같은것을 제거
 
-        # -> 원래 아이템이랑, 디텍트 확장시켰을때 아이템이랑 서로 지웠을때  뭐가남는다? = 먹혔다.
-        if seg_cls.size != 0:  # 먹힌게 존재하면
-            for cls in seg_cls:  # 원래 새그멘테이션 정보 중에서 가까운 물체를 삭제
+        # -> 원래 아이템이랑, 디텍트 확장시켰을때 아이템이랑 서로 지웠을때 뭐가남는다? = 먹혔다.
+        if seg_cls.size != 0:       # 먹힌게 존재하면
+            for cls in seg_cls:     # 원래 새그멘테이션 정보 중에서 가까운 물체를 삭제
                 n_obj2 = np.delete(n_obj2, np.argwhere(cls == n_obj2))
 
         # ->
@@ -597,13 +615,13 @@ def find_neighboring_obj(seg, target, angle, w):
     for [y, x] in dilated_target_pointList:
         label = seg[y, x]  # 세그맨테이션 된 이미지에서 추출된 포인트에 해당하는것을 라벨로 지정
 
-        if label != target and label != 16:  # 라벨과 타겟이 다를경우, 라벨이 배경일 경우
+        if label != target and label != 16:     # 라벨과 타겟이 다를경우, 라벨이 배경일 경우
             close_obj_index_list.append(label)  # 근처 오브젝트를 포함 시킴
-            delated_seg[y, x] = target  # 타겟에 해당하는 것들의 좌표를 저장
+            delated_seg[y, x] = target          # 타겟에 해당하는 것들의 좌표를 저장
 
-    if close_obj_index_list.__len__() != 0:  # 가까운 오브젝트 인덱스 리스트.길이가 0이 아닐경우
-        dilated_cls = np.unique(delated_seg)  # 다이얼레이션 후 저장된 포인트 들 중 중복 제거
-        seg_cls = np.unique(seg)  # 세그멘테이션 원 데이터 포인트 들 중 중복 제거
+    if close_obj_index_list.__len__() != 0:     # 가까운 오브젝트 인덱스 리스트.길이가 0이 아닐경우
+        dilated_cls = np.unique(delated_seg)    # 다이얼레이션 후 저장된 포인트 들 중 중복 제거
+        seg_cls = np.unique(seg)                # 세그멘테이션 원 데이터 포인트 들 중 중복 제거
 
         n_obj = np.unique(close_obj_index_list)  # 근처 오브젝트 중 중복 제거
 
