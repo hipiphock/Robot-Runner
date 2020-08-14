@@ -113,25 +113,6 @@ class Agent:
             
             rob.holder_toplace(h_loc)
 
-            # ---- ---- ---- ---- Keyboard ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-            key_list = self.set_obj(self.keyboard_list)
-            for target_cls in key_list:
-
-                rob.env_img_update()
-
-                target_xyz, mean_xy, target_pxl = rob.get_obj_pos(target_cls)
-                if target_xyz is None:
-                    print("!!>>sys : Can't find {} xyz is None ".format(RL_Obj_List[target_cls][0]))
-                    continue
-
-                rob.grasp_placing_keyboard(target_cls, mean_xy)
-
-            # ---- ---- ---- ---- Connector ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-
-            # ---- ---- ---- ---- End ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-
-            episode_num += 1
-
 if __name__ == "__main__":
     segmentation_model = Seg_detector.Segment()
     robot = robot_env.Robot(socket_ip1, socket_ip2, segmentation_model, args.seg_threshold)
