@@ -391,6 +391,10 @@ def non_linear_scatter(seg_img, target_cls, angle, w):
 def find_neighboring_obj(seg, target, angle, w):
     """
     Returns neightboring object lists of the target.
+    @seg: segment
+    @target: target object
+    @angle: 
+    @w: 
     """
     delated_seg = np.copy(seg)
     delated_seg2 = np.copy(seg)
@@ -613,7 +617,7 @@ def find_neighboring_obj(seg, target, angle, w):
     #  = 근접 물체 파악 및 경로 생성시 어떤 포인트 들을 쓸건지 저장
     close_obj_index_list = []
     for [y, x] in dilated_target_pointList:
-        label = seg[y, x]  # 세그맨테이션 된 이미지에서 추출된 포인트에 해당하는것을 라벨로 지정
+        label = seg[y, x]                       # 세그맨테이션 된 이미지에서 추출된 포인트에 해당하는것을 라벨로 지정
 
         if label != target and label != 16:     # 라벨과 타겟이 다를경우, 라벨이 배경일 경우
             close_obj_index_list.append(label)  # 근처 오브젝트를 포함 시킴
@@ -623,11 +627,11 @@ def find_neighboring_obj(seg, target, angle, w):
         dilated_cls = np.unique(delated_seg)    # 다이얼레이션 후 저장된 포인트 들 중 중복 제거
         seg_cls = np.unique(seg)                # 세그멘테이션 원 데이터 포인트 들 중 중복 제거
 
-        n_obj = np.unique(close_obj_index_list)  # 근처 오브젝트 중 중복 제거
+        n_obj = np.unique(close_obj_index_list) # 근처 오브젝트 중 중복 제거
 
         for cls in dilated_cls:
             seg_cls = np.delete(seg_cls, np.argwhere(seg_cls == cls))
-        # 세그멘테이션 된 데이터와 다이얼레이션 에서 검출된 데이터를 비교, 같은것을 제거
+        # 세그멘테이션 된 데이터와 다이얼레이션에서 검출된 데이터를 비교, 같은것을 제거
         if seg_cls.size != 0:
             for cls in seg_cls:
                 n_obj = np.delete(n_obj, np.argwhere(cls == n_obj))
@@ -646,6 +650,13 @@ def find_neighboring_obj(seg, target, angle, w):
 
 
 def linear_scatter(seg_img, target_cls, angle, w):
+    """
+    Returns linear scatter path.
+    @seg_img
+    @target_cls
+    @angle
+    @w
+    """
     delated_seg, delated_seg2, neighbored_list, neighbored_list_org = find_neighboring_obj(seg_img, target_cls, angle, w)
 
     if neighbored_list is None or neighbored_list == []:
@@ -664,8 +675,8 @@ def linear_scatter(seg_img, target_cls, angle, w):
 
     # label : 0 = neigbho
     label = np.zeros(int(n_size + pt_max))  # 타겟 크기반으로 쪼갠 것에 1/2크기를 추가하여 저장
-    label[n_size:] = 1  # 그 중 반타겟크기 이후를 1로 저장 = 주변물체 1, 타겟 = 0
-    # = 다이얼레이션 진행한 세그맨테이션에서 주변집중물체를 찾음, 그리고 타겟 오브젝트의 세그이미지에 합함
+    label[n_size:] = 1                      # 그 중 반타겟크기 이후를 1로 저장 = 주변물체 1, 타겟 = 0
+    # 다이얼레이션 진행한 세그맨테이션에서 주변집중물체를 찾음, 그리고 타겟 오브젝트의 세그이미지에 합함
     data = np.concatenate((target_pt, np.argwhere(np.array(delated_seg) == neighbor_obj)))
 
     temp = np.array([data[:, 1], data[:, 0]]).transpose()  # 좌표로 변환
@@ -706,15 +717,15 @@ def linear_scatter(seg_img, target_cls, angle, w):
     is_through = True
     is_through_n = True
     for idx, [y, x] in enumerate(target_path):
-        if seg_img[y, x] not in [neighbor_obj, 16]:  # 검사하는 이미지가 = 주변 물체 혹은 배경이 아니라면,
-            non_neighbor_upper.append(seg_img[y, x])  # 리스트에 그 좌표를 추가
-            if is_through:  # 처음 측정된것이 발견되면
-                upper_idx = idx  # 첫 포인트로 저장
+        if seg_img[y, x] not in [neighbor_obj, 16]:     # 검사하는 이미지가 = 주변 물체 혹은 배경이 아니라면,
+            non_neighbor_upper.append(seg_img[y, x])    # 리스트에 그 좌표를 추가
+            if is_through:          # 처음 측정된것이 발견되면
+                upper_idx = idx     # 첫 포인트로 저장
                 is_through = False  # 더이상 첫 포인트로 저장하지 않음
         # break
 
-        elif seg_img[y, x] in [neighbor_obj]:  # 검사하는 이미지가 = 주변 물체 라면,
-            non_neighbor_upper.append(seg_img[y, x])  # 리스트에 좌표를 추가
+        elif seg_img[y, x] in [neighbor_obj]:           # 검사하는 이미지가 = 주변 물체 라면,
+            non_neighbor_upper.append(seg_img[y, x])    # 리스트에 좌표를 추가
             if is_through_n:
                 upper_n_idx = idx
                 is_through_n = False

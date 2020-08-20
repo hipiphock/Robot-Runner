@@ -588,9 +588,9 @@ class Robot:
                 	self.rob2.movej(self.initial_pose2, 2, 2)   # 어딜 가는거야
                 	self.gripper2.close_gripper()               # 뭘 잡는거야
                 	move_list = []
-                	move_pt = np.append(xyz_list[0], [0, -3.14, 0])     # ???
-                	move_list.append(move_pt + np.array([0, 0, self.z_lift, 0, 0, 0]))  # ???
-                	self.rob2.movels(move_list, 0.7, 0.7, radius=0.01)  # ???
+                	move_pt = np.append(xyz_list[0], [0, -3.14, 0]) # ???
+                	move_list.append(move_pt + np.array([0, 0, self.z_lift, 0, 0, 0]))
+                	self.rob2.movels(move_list, 0.7, 0.7, radius=0.01)
                 	move_pt[2] = self.z_tray
                 	move_list.append(move_pt)
                 

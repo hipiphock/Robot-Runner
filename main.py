@@ -28,8 +28,8 @@ class Agent:
     def __init__(self, rob):
         self.robot = rob
         self.obj_list = [i for i in range(9, 27)]   # 9~26번, 13, 14 제거 (커넥터)
-        self.obj_list.remove(13)        # : small connector
-        self.obj_list.remove(14)        # : big connector
+        self.obj_list.remove(13)                    # small connector
+        self.obj_list.remove(14)                    # big connector
 
         obj_list_add=[i for i in range(31,42)]
         self.obj_list+=obj_list_add
