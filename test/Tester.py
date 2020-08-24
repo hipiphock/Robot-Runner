@@ -75,21 +75,7 @@ class Agent:
                 print("!!>>sys : Can't find {} xyz is None ".format(RL_Obj_List[target_obj][0]))
                 logging.info("Could not find {}, xyz is None".format(RL_Obj_List[target_obj][0]))
                 continue
-
-            print("-->>sys : Current Target : {}".format(RL_Obj_List[target_obj][0]))
-            logging.debug("Current Target: {}".format(RL_Obj_List[target_obj][0]))
-
-            # if target_obj in [15, 16]:  # :
-            #     rob.scatter(target_obj, args.use_scatter, args.num_scattering)
-            #     rob.grasp_placing_bin(target_obj)
-            # elif target_obj in range(17, 21):
-            #     rob.scatter(target_obj, args.use_scatter, args.num_scattering)
-            #     rob.grasp_placing_drawer(target_obj)
-            # else:
-            #     rob.scatter(target_obj, args.use_scatter, target_xyz, args.num_scattering, target_pxl)
-            #     rob.grasp_placing_box(target_obj, target_xyz, target_pxl)
-            #     rob.grasp_placing_box(target_obj, target_imgmean, target_xyz)
-
+            logging.info("Current Target: {}".format(RL_Obj_List[target_obj][0]))
             rob.grasp_placing_box(target_obj, target_imgmean, target_xyz)
 
     def run_penholder_test(self):
@@ -102,32 +88,14 @@ class Agent:
 
         # ---- ---- ---- ---- Pen ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
         holder_list = self.set_obj(self.holder_list)
-        #holder_list = [9]   # : test용, 홀더와 빈, 서랍 Mask-RCNN에 포함시켜야함
         h_loc = None
         for target_cls in holder_list:
-        # for target_cls in [5]:
-        #     target_xyz = None
-        #     while True:
-        #         try:
-        #             rob.env_img_update()
-        #             target_xyz0, _, target_pxl0 = rob.get_obj_pos(target_cls)
-        #             rob.env_img_update()
-        #             target_xyz1, _, target_pxl1 = rob.get_obj_pos(target_cls)
-        #             rob.env_img_update()
-        #             target_xyz2, _, target_pxl2 = rob.get_obj_pos(target_cls)
-        #             target_xyz = (np.array(target_xyz0) + np.array(target_xyz1) + np.array(target_xyz2)) / 3.0
-        #             break
-        #         except:
-        #             print("retrying")
             rob.env_img_update()
-        
             target_xyz, target_imgmean, target_pxl = rob.get_obj_pos(target_cls)
             if target_xyz is None:
-                print("!!>>sys : Can't find {} xyz is None ".format(RL_Obj_List[target_cls][0]))
                 logging.info("Could not find {}, xyz is None.")
                 continue
         
-            print("-->>sys : Current Target : {}".format(RL_Obj_List[target_cls][0]))
             logging.debug("Current Target: {}".format(RL_Obj_List[target_cls][0]))
             h_loc = rob.grasp_holder(target_cls, target_xyz)
             break
@@ -139,12 +107,10 @@ class Agent:
         
             target_xyz, _, target_pxl = rob.get_obj_pos(target_cls)
             if target_xyz is None:
-                print("!!>>sys : Can't find {} xyz is None ".format(RL_Obj_List[target_cls][0]))
                 logging.info("Could not find {}, xyz is None.")
                 continue
         
-            print("-->>sys : Current Target : {}".format(RL_Obj_List[target_cls][0]))
-            logging.debug("Current Target: {}".format(RL_Obj_List[target_cls][0]))
+            logging.info("Current Target: {}".format(RL_Obj_List[target_cls][0]))
             rob.grasp_pen(target_cls, target_xyz)
         
             # : 이미지 찍을지 말지 결정 필요

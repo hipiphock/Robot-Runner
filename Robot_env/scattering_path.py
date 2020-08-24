@@ -206,10 +206,6 @@ def non_linear_scatter(seg_img, target_cls, angle, w):
     temp = np.array([data[:, 1], data[:, 0]]).transpose()  # 모두 x,y 좌표에 맞게 변환
 
     svm = SVC(kernel='rbf', random_state=0, gamma=0.0001, C=1000.000)  # svm 파라미터 설정
-    # if np.unique(label) == 0:
-    # 	return None
-    # if temp is None :
-    # 	return
     svm.fit(temp, label)  # 해당 픽셀들로 svm을 실행
 
     # = ????

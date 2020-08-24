@@ -1,4 +1,4 @@
-
+from Tester import Agent
 
 if __name__ == "__main__":
     logging.basicConfig(filename='logs/RobotTest.log', level=logging.INFO)
