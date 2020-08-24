@@ -20,6 +20,7 @@ import math3d as m3d
 
 # utils
 import random
+import logging
 from Robot_env.config import RL_Obj_List
 from Robot_env.scattering_path import *
 #
@@ -31,12 +32,10 @@ import time
 import sys
 import numpy as np
 import copy
-
+import logging
 
 class Robot:
-    """
-    Main class for robot handling.
-    """
+
     def __init__(self, socket_ip1, socket_ip2, segmentation_model=None, threshold=0.60):
 
         self.rob1 = robot_util.Robot_util(socket_ip1)
@@ -66,6 +65,7 @@ class Robot:
         self.home = np.deg2rad([0.0, -90.0, 0.0, -90.0, 0.0, 0.0])
         self.initial_pose1 = np.deg2rad([-20.0, -110.0, -70.0, -90.0, 90.0, -20.0])
         self.initial_pose2 = np.deg2rad([20.0, -70.0, 70.0, -90.0, -90.0, 20.0])
+        # self.cam_position = np.deg2rad([1.195, -112.025, -6.55, -151.41, 89.66, 2.10])  # : 교체이전
         self.cam_position = np.deg2rad([0.3209, -113.0970, -4.5383, -152.3580, 89.6613, 1.2152])  # : 교체 후
 
         # Robot Dynamics & Kinematics Parameters
@@ -191,9 +191,6 @@ class Robot:
         self.use_scatter = True
 
     def env_img_update(self):
-        """
-        Updates image
-        """
         self.rob1.movej(self.cam_position, 1.0, 1.0)
         self.env_img = self.global_cam.capture()
         self.seg_img, self.color_seg_img, _ = self.seg_model.total_run(self.env_img, self.seg_threshold)
@@ -277,9 +274,6 @@ class Robot:
     # 		return None, None
 
     def angle_detect(self, target_cls):
-        """
-        Detects angle.
-        """
         obj_angle = 1.1
         w = 1.1
         h = 1.1
@@ -450,12 +444,11 @@ class Robot:
 
     # = 각도 검출
     def get_boxed_angle(self, target_cls):
-        # 새로운 array가 target class와 같은 좌표를 찾음
-        cls_points = np.argwhere(self.seg_img == target_cls)
+        cls_points = np.argwhere(self.seg_img == target_cls)  # 새로운 어레이가 타겟 클래스랑 같은 좌표를 찾음
         empty_img = np.zeros((720, 1280), dtype=np.uint8)
 
-        for [y, x] in cls_points:   # 타겟클레스와 같은 점들에 대해
-            empty_img[y, x] = 64    # 표시전용 (아무숫자 가능)
+        for [y, x] in cls_points:  # 타겟클레스와 같은 점들에 대해
+            empty_img[y, x] = 64  # 표시전용 (아무숫자 가능)
 
         time_str = time.strftime('%Y%m%d-%H-%M-%S', time.localtime(time.time()))
         # >> check
@@ -502,27 +495,21 @@ class Robot:
                 # print("target angle & short axis : %f, %f" % (angle, w))
                 return angle, w, h
 
-
-    def scatter(self, target_cls, use_scatter, obj_pos=None, num_scattering=None, type="SHORT", target_pxl=None):
-        """
-        Scattering function
-        The robot scatters given object(?)
-        """
+    # = 20200107
+    def scatter(self, target_cls, use_scatter, obj_pos=None, num_scattering=None, target_pxl=None):
         self.use_scatter = use_scatter
 
         if (use_scatter is False) or (num_scattering is None):
-            logging.info("use_scatter is False")
             print("-->>sys : use_scatter is False")
 
         elif (target_cls is None) or (obj_pos is None) or (target_pxl is None):
-            logging.info("target_pose is None")
             print("!!>>sys : target_pose is None")
         else:
 
-            target_pose = copy.deepcopy(obj_pos)
+            target_pose = copy.deepcopy(obj_pos)  # --
 
-            if (self.x_boundary[0] < target_pose[0] < self.x_boundary[1]) and 
-                        (self.y_boundary[0] < target_pose[1] < self.y_boundary[1]):
+            if (self.x_boundary[0] < target_pose[0] < self.x_boundary[1]) and (
+                    self.y_boundary[0] < target_pose[1] < self.y_boundary[1]):
                 back_pose = np.deg2rad([0.0, 0.0, -90.0, -90.0, 0.0, 0.0])
                 # self.rob1.movej(back_pose, 1.0, 1.0)
                 starting_pose = np.deg2rad([90.0, -90.0, 110.0, -110.0, -90.0, 0.0])
@@ -530,93 +517,86 @@ class Robot:
                 self.robot_dual_control(rob1_pose=back_pose, rob1_vel=1.0, rob1_acc=1.0,
                                         rob2_pose=starting_pose, rob2_vel=0.75, rob2_acc=0.75)
 
-                ### The following was commented. Does not grant it for safety.
-                rob2_loc = self.rob2.getl()             # get rob2's location (That is, the gripper robot's location)
-                
-                rob2_preloc = copy.deepcopy(rob2_loc)   # previous location
-                rob2_preloc[0] = target_pose[0]
-                self.rob2.movel(rob2_preloc, 0.5, 0.5)  # move robot's x location to target's x
-                
-                rob2_loc[:2] = target_pose[:2]
-                self.rob2.movel(rob2_loc, 0.5, 0.5)     # move robot's y location to target's y
-                
-                rob2_loc[2] = rob2_loc[2] - 0.25
-                self.rob2.movel(rob2_loc, 0.5, 0.5)     # move robot's z location to target's z
-                
-                time.sleep(1.0)
-                
-                rob2_loc[2] = rob2_loc[2] + 0.25        
-                self.rob2.movel(rob2_loc, 0.5, 0.5)     # 다시 원래 위치로 이동 (z 좌표)
-                self.rob2.movel(rob2_preloc, 0.5, 0.5)  # (y 좌표)
-                self.rob2.movej(starting_pose, 1.0, 1.0)# (x 좌표)
-                ### The above code was commented.
+                # rob2_loc = self.rob2.getl()
+                #
+                # rob2_preloc = copy.deepcopy(rob2_loc)
+                # rob2_preloc[0] = target_pose[0]
+                # self.rob2.movel(rob2_preloc, 0.5, 0.5)
+                #
+                # rob2_loc[:2] = target_pose[:2]
+                # rob2_loc[2] = rob2_loc[2]
+                # self.rob2.movel(rob2_loc, 0.5, 0.5)
+                #
+                # rob2_loc[2] = rob2_loc[2] - 0.25
+                # self.rob2.movel(rob2_loc, 0.5, 0.5)
+                #
+                # time.sleep(1.0)
+                #
+                # rob2_loc[2] = rob2_loc[2] + 0.25
+                # self.rob2.movel(rob2_loc, 0.5, 0.5)
+                #
+                # self.rob2.movel(rob2_preloc, 0.5, 0.5)
+                # self.rob2.movej(starting_pose, 1.0, 1.0)
+                # aaaaaa = 0
 
-            else:
-                # Case: There is no need to do scattering
-                print("%s is out of Safe Boundary" % RL_Obj_List[self.target_cls][0], file=sys.stderr)
-                logging.info("%s is out of Safe Boundary" % RL_Obj_List[self.target_cls][0], file=sys.stderr)
-                self.obj_pos = None
-                return
-
-                # 이게 뭐하는 걸까?
-                # Scattering code that was commented
+                type="LONG"
                 for _ in range(num_scattering):
                 	# Scattering path
                 	angle, w, h = self.angle_detect(target_cls)
                 	temp_seg = np.copy(self.seg_img)
-                	if type == "LONG":          # Question: What is type "Long" is scattering?
+                	if type == "LONG":
                 		path = non_linear_scatter(temp_seg, target_cls, 90 + angle, h)
-                		if path is "linear":    # Question: What is linear path in scattering?
+                		if path is "linear":
                 			path = linear_scatter(temp_seg, target_cls, 90 + angle, h)
-                	else:                       # Question: Is there only two types in scattering?
+                	else:
                 		path = non_linear_scatter(temp_seg, target_cls, angle, w)
                 		if path is "linear":
                 			path = linear_scatter(temp_seg, target_cls, angle, w)
-                
+
                 	if path is None:
                 		self.color_path = None
                 		return None
-                
+
                 	for idx, _ in enumerate(path):
                 		path[idx][0] = 255 - path[idx][0]
-                
+
                 	if path.size == 0:
                 		return None
-                
+
                 	self.color_path = path
                 	# 이미지에 Color Path 만드는 함수 별도 만들기 - 수정 필요
-                
+
                 	# Move points of robot
                 	xyz_list = self.global_cam.path2xyz(path)
                 	xyz_list[0] = clip(xyz_list[0], self.y_boundary, self.x_boundary)
-                	self.rob2.movej(self.initial_pose2, 2, 2)   # 어딜 가는거야
-                	self.gripper2.close_gripper()               # 뭘 잡는거야
+                	self.rob2.movej(self.initial_pose2, 2, 2)
+                	self.gripper2.close_gripper()
                 	move_list = []
-                	move_pt = np.append(xyz_list[0], [0, -3.14, 0]) # ???
+                	move_pt = np.append(xyz_list[0], [0, -3.14, 0])
                 	move_list.append(move_pt + np.array([0, 0, self.z_lift, 0, 0, 0]))
                 	self.rob2.movels(move_list, 0.7, 0.7, radius=0.01)
                 	move_pt[2] = self.z_tray
                 	move_list.append(move_pt)
-                
+
                 	for pt_xyz in xyz_list[1::2]:
                 		pt_xyz[2] = self.z_tray
                 		pt_xyz = clip(pt_xyz, self.y_boundary, self.x_boundary)
                 		move_pt = np.append(pt_xyz, [0, -3.14, 0])
                 		move_list.append(move_pt)
-                
+
                 	move_pt[2] += 0.15
                 	move_list.append(move_pt)
-                
+
                 	# Wrist angle control
                 	rotate_j = self.rob2.getj()
                 	if len(move_list) > 7:
-                		angle_init = atan2(move_list[7][1] - move_list[0][1],
-                                     move_list[7][0] - move_list[0][0]) * (180 / np.pi)
+                		angle_init = atan2(move_list[7][1] - move_list[0][1], move_list[7][0] - move_list[0][0]) * (
+                				180 / np.pi)
                 		angle = []
                 		for i in range(len(move_list) - 7)[::3]:
                 			angle.append(
                 				atan2(move_list[i + 7][1] - move_list[i][1], move_list[i + 7][0] - move_list[i][0]))
-                
+
                 		for i in range(len(angle) - 1)[-1::-1]:
                 			if angle[i + 1] * angle[i] < 0:
                 				angle.insert(i + 1, angle[i])
@@ -627,10 +607,10 @@ class Robot:
                 				a2 = angle[i] + tan * 2
                 				angle.insert(i + 1, a2)
                 				angle.insert(i + 1, a1)
-                
+
                 		for i in range(7):
                 			angle.append(angle[-1])
-                
+
                 		rpose = []
                 		if angle_init > 90:
                 			for i in range(len(angle)):
@@ -650,48 +630,202 @@ class Robot:
                 				rotate_j_re = np.append(rotate_j[:-1], rotation)
                 				rpose = self.solve_FK(rotate_j_re)
                 				move_list[i][3:] = rpose[3:]
-                
+
                 		for i in range(7):
                 			move_list[-(i + 1)][3:] = rpose[3:]
-                
+
                 	self.rob2.movels(move_list, 0.5, 0.5, radius=0.01)
                 	self.rob2.movej(self.initial_pose2, 2, 2)
                 	self.rob2.movej(self.home, 2, 2)
                 	self.gripper2.open_gripper()
 
+            else:
+                print("%s is out of Safe Boundary" % RL_Obj_List[self.target_cls][0], file=sys.stderr)
+                self.obj_pos = None
+                return
 
+                # for _ in range(num_scattering):
+                # 	# Scattering path
+                # 	angle, w, h = self.angle_detect(target_cls)
+                # 	temp_seg = np.copy(self.seg_img)
+                # 	if type == "LONG":
+                # 		path = non_linear_scatter(temp_seg, target_cls, 90 + angle, h)
+                # 		if path is "linear":
+                # 			path = linear_scatter(temp_seg, target_cls, 90 + angle, h)
+                # 	else:
+                # 		path = non_linear_scatter(temp_seg, target_cls, angle, w)
+                # 		if path is "linear":
+                # 			path = linear_scatter(temp_seg, target_cls, angle, w)
+                #
+                # 	if path is None:
+                # 		self.color_path = None
+                # 		return None
+                #
+                # 	for idx, _ in enumerate(path):
+                # 		path[idx][0] = 255 - path[idx][0]
+                #
+                # 	if path.size == 0:
+                # 		return None
+                #
+                # 	self.color_path = path
+                # 	# 이미지에 Color Path 만드는 함수 별도 만들기 - 수정 필요
+                #
+                # 	# Move points of robot
+                # 	xyz_list = self.global_cam.path2xyz(path)
+                # 	xyz_list[0] = clip(xyz_list[0], self.y_boundary, self.x_boundary)
+                # 	self.rob2.movej(self.initial_pose2, 2, 2)
+                # 	self.gripper2.close_gripper()
+                # 	move_list = []
+                # 	move_pt = np.append(xyz_list[0], [0, -3.14, 0])
+                # 	move_list.append(move_pt + np.array([0, 0, self.z_lift, 0, 0, 0]))
+                # 	self.rob2.movels(move_list, 0.7, 0.7, radius=0.01)
+                # 	move_pt[2] = self.z_tray
+                # 	move_list.append(move_pt)
+                #
+                # 	for pt_xyz in xyz_list[1::2]:
+                # 		pt_xyz[2] = self.z_tray
+                # 		pt_xyz = clip(pt_xyz, self.y_boundary, self.x_boundary)
+                # 		move_pt = np.append(pt_xyz, [0, -3.14, 0])
+                # 		move_list.append(move_pt)
+                #
+                # 	move_pt[2] += 0.15
+                # 	move_list.append(move_pt)
+                #
+                # 	# Wrist angle control
+                # 	rotate_j = self.rob2.getj()
+                # 	if len(move_list) > 7:
+                # 		angle_init = atan2(move_list[7][1] - move_list[0][1], move_list[7][0] - move_list[0][0]) * (
+                # 				180 / np.pi)
+                # 		angle = []
+                # 		for i in range(len(move_list) - 7)[::3]:
+                # 			angle.append(
+                # 				atan2(move_list[i + 7][1] - move_list[i][1], move_list[i + 7][0] - move_list[i][0]))
+                #
+                # 		for i in range(len(angle) - 1)[-1::-1]:
+                # 			if angle[i + 1] * angle[i] < 0:
+                # 				angle.insert(i + 1, angle[i])
+                # 				angle.insert(i + 1, angle[i])
+                # 			else:
+                # 				tan = (angle[i + 1] - angle[i]) / 3
+                # 				a1 = angle[i] + tan * 1
+                # 				a2 = angle[i] + tan * 2
+                # 				angle.insert(i + 1, a2)
+                # 				angle.insert(i + 1, a1)
+                #
+                # 		for i in range(7):
+                # 			angle.append(angle[-1])
+                #
+                # 		rpose = []
+                # 		if angle_init > 90:
+                # 			for i in range(len(angle)):
+                # 				rotation = rotate_j[-1] - (angle[i] - np.pi)
+                # 				rotate_j_re = np.append(rotate_j[:-1], rotation)
+                # 				rpose = self.solve_FK(rotate_j_re)
+                # 				move_list[i][3:] = rpose[3:]
+                # 		elif angle_init < -90:
+                # 			for i in range(len(angle)):
+                # 				rotation = rotate_j[-1] - (angle[i] + np.pi)
+                # 				rotate_j_re = np.append(rotate_j[:-1], rotation)
+                # 				rpose = self.solve_FK(rotate_j_re)
+                # 				move_list[i][3:] = rpose[3:]
+                # 		else:
+                # 			for i in range(len(angle)):
+                # 				rotation = rotate_j[-1] - angle[i]
+                # 				rotate_j_re = np.append(rotate_j[:-1], rotation)
+                # 				rpose = self.solve_FK(rotate_j_re)
+                # 				move_list[i][3:] = rpose[3:]
+                #
+                # 		for i in range(7):
+                # 			move_list[-(i + 1)][3:] = rpose[3:]
+                #
+                # 	self.rob2.movels(move_list, 0.5, 0.5, radius=0.01)
+                # 	self.rob2.movej(self.initial_pose2, 2, 2)
+                # 	self.rob2.movej(self.home, 2, 2)
+                # 	self.gripper2.open_gripper()
 
+    # # = 대체 (현재 안쓰지만 참고용)
+    # def grasp_placing_box_old(self, target_cls):
+    #     pass
+    #     #     # Detecting object pose
+    #     #     self.env_img_update()  # : 세그 / 컬러세그
+    #     #
+    #     #     if target_cls in (np.unique(self.seg_img)):
+    #     #         _, self.obj_pos = self.get_obj_pos(target_cls)
+    #     #     else:
+    #     #         self.obj_pos = None
+    #     #
+    #     #     if self.obj_pos is None:
+    #     #         print("Failed to find %s" % RL_Obj_List[self.target_cls][0], file=sys.stderr)
+    #     #         return
+    #     #
+    #     #     if (self.x_boundary[0] < self.obj_pos[0] < self.x_boundary[1]) and (
+    #     #             self.y_boundary[0] < self.obj_pos[1] < self.y_boundary[1]):
+    #     #         self.goal = np.append(self.obj_pos + np.array([0, 0, self.z_lift]), [0, -3.14, 0])
+    #     #     else:
+    #     #         print("%s is out of Safe Boundary" % RL_Obj_List[self.target_cls][0], file=sys.stderr)
+    #     #         self.obj_pos = None
+    #     #         return
+    #     #
+    #     #     self.rob1.movej(self.initial_pose1, self.acc, self.vel)
+    #     #
+    #     #     obj_angle, w, h = self.angle_detect(target_cls)
+    #     #     obj_angle = np.deg2rad(obj_angle)
+    #     #     print("Target : {}, w : {}".format(RL_Obj_List[self.target_cls][0], w))
+    #     #
+    #     #     gripper_init_pose = 220 - int(round(9.7 * w))
+    #     #     if gripper_init_pose < 13:
+    #     #         gripper_init_pose = 13
+    #     #     if target_cls == 0:
+    #     #         gripper_init_pose = 130
+    #     #     self.gripper1.gripper_action(gripper_init_pose)
+    #     #     rotated_joint_position = np.append(
+    #     #         self.rob1.getj()[:-1], self.rob1.getj()[-1] - obj_angle)
+    #     #     rotated_pose = self.solve_FK(rotated_joint_position)
+    #     #
+    #     #     # Z-Value per Object
+    #     #     self.obj_pos[2] = self.z_tray + 0.01
+    #     #
+    #     #     # Grasping Task
+    #     #     move_list = []
+    #     #     self.goal[3:] = rotated_pose[3:]
+    #     #     move_list.append(self.goal)
+    #     #     move_list.append(np.append(self.obj_pos, rotated_pose[3:]))
+    #     #     self.rob1.movels(move_list, 0.3, 0.3, radius=0.03)
+    #     #     self.gripper1.close_gripper()
+    #     #     self.obj_pos[2] += self.z_lift
+    #     #     goal = np.append(self.obj_pos, self.rob1.getl()[3:])  # Initial point
+    #     #     self.rob1.movel(goal, 1, 1)
+    #     #     self.rob1.movej(self.initial_pose1, self.acc, self.vel)
+
+    # ---- ---- ---- ---- Picking ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+    # = 20191100
     def grasp_placing_box(self, target_cls, target_imgmean, obj_pos=None, ):
-        """
-        Main function used for object picking test.
-        """
+
         if obj_pos is None:
-            logging.warning("obj_pos is None.")
+            print("!!>>sys : target_pose is None")
             return
         else:
             target_pose = copy.deepcopy(obj_pos)  # --
-            logging.debug("target_pose = {}".format(target_pose))
+            print("-->> target_pose : {}".format(target_pose))
 
             if (self.x_boundary[0] < target_pose[0] < self.x_boundary[1]) and (
                     self.y_boundary[0] < target_pose[1] < self.y_boundary[1]):
 
-                ### @MEMO: real scattering code part
-                type_ = "LONG"
-                num_scattering = 5
-                for _ in range(num_scattering):
-                    # Scattering path
-                    angle, w, h = self.angle_detect(target_cls)
-                    temp_seg = np.copy(self.seg_img)
-                    if type_ == "LONG":
-                        # What is type_ LONG?
-                        path = non_linear_scatter(temp_seg, target_cls, 90 + angle, h)
-                        if path is "linear":
-                            path = linear_scatter(temp_seg, target_cls, 90 + angle, h)
-                    else:
-                        path = non_linear_scatter(temp_seg, target_cls, angle, w)
-                        if path is "linear":
-                            path = linear_scatter(temp_seg, target_cls, angle, w)
-                ### End of scattering
+                # scattering
+                # type_ = "LONG"
+                # num_scattering = 5
+                # for _ in range(num_scattering):
+                #     # Scattering path
+                #     angle, w, h = self.angle_detect(target_cls)
+                #     temp_seg = np.copy(self.seg_img)
+                #     if type_ == "LONG":
+                #         path = non_linear_scatter(temp_seg, target_cls, 90 + angle, h)
+                #         if path is "linear":
+                #             path = linear_scatter(temp_seg, target_cls, 90 + angle, h)
+                #     else:
+                #         path = non_linear_scatter(temp_seg, target_cls, angle, w)
+                #         if path is "linear":
+                #             path = linear_scatter(temp_seg, target_cls, angle, w)
 
                 back_pose = np.deg2rad([0.0, 0.0, -90.0, -90.0, 0.0, 0.0])
                 # self.rob1.movej(back_pose, 1.0, 1.0)
@@ -743,7 +877,6 @@ class Robot:
                 # # self.rob2.movej(robot_joint, acc=0.2, vel=0.2)
 
                 robot_loc_after = self.rob2.getl()
-                #robot_loc_after[2] = copy.deepcopy(robot_loc_after[2]) - 0.245
                 robot_loc_after[2] = copy.deepcopy(robot_loc_after[2]) - 0.246
                 self.rob2.movel(robot_loc_after, 0.5, 0.5)
 
@@ -862,59 +995,226 @@ class Robot:
             # 	self.rob2.movej(self.home, 2, 2)
             # 	self.gripper2.open_gripper()
 
-    # = 미완
-    def grasp_placing_bin(self, target_cls):
-        pass
-        # # Detecting object pose
-        # self.env_img_update()
-        # if target_cls in (np.unique(self.seg_img)):
-        #     self.obj_pos, _ = self.get_obj_pos(target_cls)
-        # else:
-        #     self.obj_pos = None
-        #     return
-        # if self.obj_pos is None:
-        #     print("Failed to find %s" % RL_Obj_List[self.target_cls][0], file=sys.stderr)
-        #     return
-        # if (self.x_boundary[0] < self.obj_pos[0] < self.x_boundary[1]) and (
-        #         self.y_boundary[0] < self.obj_pos[1] < self.y_boundary[1]):
-        #     self.goal = np.append(self.obj_pos + np.array([0, 0, self.z_lift]), [0, -3.14, 0])
-        # else:
-        #     print("%s is out of Safe Boundary" % RL_Obj_List[self.target_cls][0], file=sys.stderr)
-        #     self.obj_pos = None
-        #     return
-        #
-        # self.rob1.movej(self.initial_pose1, self.acc, self.vel)
-        #
-        # obj_angle, w, h = self.angle_detect(target_cls)
-        # obj_angle = np.deg2rad(obj_angle)
-        # print("Target : {}, w : {}".format(RL_Obj_List[self.target_cls][0], w))
+    def grasp_placing_bin(self, target_cls, target_imgmean, obj_pos=None, bin_pos=None):
+        if obj_pos is None:
+            print("!!>>sys : target_pose is None")
+            return
+        else:
+            target_pose = copy.deepcopy(obj_pos)  # --
+            print("-->> target_pose : {}".format(target_pose))
+            if (self.x_boundary[0] < target_pose[0] < self.x_boundary[1]) and (
+                    self.y_boundary[0] < target_pose[1] < self.y_boundary[1]):
+                target_pose[:2] = -target_pose[:2]
+                back_pose = np.deg2rad([0.0, -180.0, 90.0, -90.0, 0.0, 0.0])
+                starting_pose = np.deg2rad([-90.0, -80.0, -120.0, -70.0, 90.0, 0])
+                self.robot_dual_control(rob1_pose=starting_pose, rob1_vel=0.75, rob1_acc=0.75,
+                                        rob2_pose=back_pose, rob2_vel=0.75, rob2_acc=0.75)
 
-    # = 미완
-    def grasp_placing_drawer(self, target_cls):
-        pass
-        # # Detecting object pose
-        # self.env_img_update()
-        # if target_cls in (np.unique(self.seg_img)):
-        #     self.obj_pos, _ = self.get_obj_pos(target_cls)
-        # else:
-        #     self.obj_pos = None
-        #     return
-        # if self.obj_pos is None:
-        #     print("Failed to find %s" % RL_Obj_List[self.target_cls][0], file=sys.stderr)
-        #     return
-        # if (self.x_boundary[0] < self.obj_pos[0] < self.x_boundary[1]) and (
-        #         self.y_boundary[0] < self.obj_pos[1] < self.y_boundary[1]):
-        #     self.goal = np.append(self.obj_pos + np.array([0, 0, self.z_lift]), [0, -3.14, 0])
-        # else:
-        #     print("%s is out of Safe Boundary" % RL_Obj_List[self.target_cls][0], file=sys.stderr)
-        #     self.obj_pos = None
-        #     return
-        #
-        # self.rob1.movej(self.initial_pose1, self.acc, self.vel)
-        #
-        # obj_angle, w, h = self.angle_detect(target_cls)
-        # obj_angle = np.deg2rad(obj_angle)
-        # print("Target : {}, w : {}".format(RL_Obj_List[self.target_cls][0], w))
+                # : 로봇의 현재 위치 기록
+                rob1_loc = self.rob1.getl()
+                rob1_loc[0] = rob1_loc[0] - 0.0015
+                rob1_preloc = copy.deepcopy(rob1_loc)
+                # : 로봇의 x좌표먼저 이동
+                rob1_preloc[0] = target_pose[0]
+                self.rob1.movel(rob1_preloc, 1.0, 1.0)
+                # : 타겟 좌표로 이동
+                rob1_loc[:2] = target_pose[:2]
+                rob1_loc[1] = rob1_loc[1] + 0.185
+                self.rob1.movel(rob1_loc, 1.0, 1.0)
+
+                robot_joint = self.rob1.getj()
+                obj_angle, w, h = self.angle_detect(target_cls)
+                if obj_angle < -120:
+                    robot_joint[5] = np.deg2rad(obj_angle + np.rad2deg(robot_joint[0]) + 180.0)
+                elif 120 < obj_angle:
+                    robot_joint[5] = np.deg2rad(obj_angle + np.rad2deg(robot_joint[0]) - 180.0)
+                else:
+                    robot_joint[5] = np.deg2rad(obj_angle + np.rad2deg(robot_joint[0]))
+                self.rob1.movej(robot_joint, acc=1.0, vel=1.0)
+
+                env_show = self.env_show.copy()
+                env_show = cv2.ellipse(env_show, (int(target_imgmean[1] / 2), int(target_imgmean[0] / 2)), (0, 10),
+                                       obj_angle, 0, 360, (0, 128, 0))
+                env_show = cv2.ellipse(env_show, (int(target_imgmean[1] / 2), int(target_imgmean[0] / 2)), (40, 0),
+                                       obj_angle, 0, 360, (0, 255, 0))
+                cv2.imshow("env_show", env_show)
+                cv2.moveWindow("env_show", 0, 0)
+                cv2.waitKey(2)
+
+                robot_loc_after = self.rob1.getl()
+                robot_loc_after[2] = copy.deepcopy(robot_loc_after[2]) - 0.248
+                self.rob1.movel(robot_loc_after, 1.0, 1.0)
+                self.gripper1.close_gripper()
+                self.rob1.movel(rob1_loc, 1.0, 1.0)
+
+                # 쓰레기통으로 이동
+                target_pose[:2] = -bin_pos[:2]
+                # rob1_loc[0] = target_pose[0] - 0.04 #좀더 왼쪽
+                rob1_loc[0] = target_pose[0] - 0.07
+                self.rob1.movel(rob1_loc, 1.0, 1.0)
+                rob1_loc[1] = target_pose[1] + 0.23
+                self.rob1.movel(rob1_loc, 0.5, 0.5)
+                self.gripper1.open_gripper()
+                self.rob1.movel(rob1_preloc, 1.0, 1.0)
+                self.rob1.movej(starting_pose, 1.5, 1.5)
+
+            else:
+                print("%s is out of Safe Boundary" % RL_Obj_List[self.target_cls][0], file=sys.stderr)
+                self.obj_pos = None
+
+
+    def open_drawer(self, drawer_pos=None):
+        """
+        Opens drawer with rob2.
+        return
+        :param drawer_cls: represents drawer class
+        :param drawer_imgmean: drawer's ???
+        :param drawer_pos: drawer's position
+        ::
+        """
+        rob1_back_pose = np.deg2rad([0.0, 0.0, -90.0, -90.0, 0.0, 0.0])
+        rob2_starting_pose = np.deg2rad([90.0, -100.0, 120.0, -110.0, -90.0, 0])
+        rob2_move_path_j1 = np.deg2rad([31.60, -94.16, 114.86, -112.45, -90.63, -56.32])
+        rob2_move_path_j2 = np.deg2rad([-65.53, -92.46, 115.08, -22.15, -245.37, 91.13])
+        rob2_move_path_j3 = np.deg2rad([-65.56, -59.49, 130.47, -70.28, -246.74, 91.30])
+        self.robot_dual_control(rob_total_pose=self.home, vel=1.0, acc=1.0)
+        self.robot_dual_control(rob1_pose=rob1_back_pose, rob1_vel=0.75, rob1_acc=0.75,
+                                rob2_pose=rob2_starting_pose, rob2_vel=0.75, rob2_acc=0.75)
+        ##### Rob2: 서랍 열기 #####
+        self.rob2.movej(rob2_move_path_j1, 1.0, 1.0)
+        self.rob2.movej(rob2_move_path_j2, 1.0, 1.0)
+        self.rob2.movej(rob2_move_path_j3, 1.0, 1.0)
+
+        rob2_loc = self.rob2.getl()
+        tmp_x = rob2_loc[0]
+        rob2_loc[0:2] = drawer_pos[0:2]
+        rob2_loc[0] = rob2_loc[0] + 0.03
+        self.rob2.movel(rob2_loc, 1.0, 1.0)
+
+        self.gripper2.close_gripper()
+        rob2_loc[1] = rob2_loc[1] - 0.1    # 얼마나 drawer를 뺄지
+        temp_loc = copy.deepcopy(rob2_loc)
+        self.rob2.movel(rob2_loc, 1.0, 1.0)
+        self.gripper2.open_gripper()
+
+        rob2_loc[0] = tmp_x
+        self.rob2.movel(rob2_loc, 1.0, 1.0)
+        self.rob2.movej(rob2_move_path_j2, 1.0, 1.0)
+        self.rob2.movej(rob2_move_path_j1, 1.0, 1.0)
+        self.rob2.movej(rob2_starting_pose, 1.0, 1.0)
+
+    def close_drawer(self, drawer_xyz):
+        """
+        Closes drawer.
+        :param drawer_cls:
+        :param drawer_imgmean:
+        :param drawer_pos:
+        :return:
+        """
+        rob1_back_pose = np.deg2rad([0.0, 0.0, -90.0, -90.0, 0.0, 0.0])
+        rob2_starting_pose = np.deg2rad([90.0, -100.0, 120.0, -110.0, -90.0, 0])
+        rob2_move_path_j1 = np.deg2rad([31.60, -94.16, 114.86, -112.45, -90.63, -56.32])
+        rob2_move_path_j2 = np.deg2rad([-73.37, -91.49, 102.34, -100.34, -88.46, 15.72])
+        rob2_move_path_j3 = np.deg2rad([-70.49, -70.50, 111.48, -135.33, -89.34, 22.18])
+        self.robot_dual_control(rob_total_pose=self.home, vel=1.0, acc=1.0)
+        self.robot_dual_control(rob1_pose=rob1_back_pose, rob1_vel=0.75, rob1_acc=0.75,
+                                rob2_pose=rob2_starting_pose, rob2_vel=0.75, rob2_acc=0.75)
+
+        # ##### Rob2: 서랍 닫기 #####
+        self.rob2.movej(rob2_move_path_j1, 1.0, 1.0)
+        self.rob2.movej(rob2_move_path_j2, 1.0, 1.0)
+        self.rob2.movej(rob2_move_path_j3, 1.0, 1.0)
+        rob2_loc = self.rob2.getl()
+        rob2_loc[0] = drawer_xyz[0] + 0.03
+        self.rob2.movel(rob2_loc, 1.0, 1.0)
+        rob2_loc[1] = drawer_xyz[1] + 0.028
+        self.rob2.movel(rob2_loc, 0.5, 0.5) # 서랍 넣기
+        self.rob2.movej(rob2_move_path_j2, 1.0, 1.0)
+        self.rob2.movej(rob2_move_path_j1, 1.0, 1.0)
+        self.rob2.movej(rob2_starting_pose, 1.0, 1.0)
+
+    def grasp_placing_drawer(self, target_cls, target_imgmean, obj_pos=None ):
+
+        if obj_pos is None:
+            print("!!>>sys : target_pose is None")
+            return
+        else:
+            target_pose = copy.deepcopy(obj_pos)  # --
+
+            print("-->> target_pose : {}".format(target_pose))
+
+            if (self.x_boundary[0] < target_pose[0] < self.x_boundary[1]) and (
+                    self.y_boundary[0] < target_pose[1] < self.y_boundary[1]):
+
+                rob1_starting_pose = np.deg2rad([-90.0, -80.0, -120.0, -70.0, 90.0, 0])
+                rob1_back_pose = np.deg2rad([0.0, 0.0, -90.0, -90.0, 0.0, 0.0])
+                rob2_starting_pose = np.deg2rad([90.0, -100.0, 120.0, -110.0, -90.0, 0])
+                rob2_back_pose = np.deg2rad([0.0, -180.0, 90.0, -90.0, 0.0, 0.0])
+                move_path_j1 = np.deg2rad([31.60, -94.16, 114.86, -112.45, -90.63, -56.32])
+                move_path_j2 = np.deg2rad([-65.56, -59.49, 130.47, -70.28, -246.74, 91.30])
+                self.robot_dual_control(rob_total_pose=self.home, vel=1.0, acc=1.0)
+                self.robot_dual_control(rob1_pose=rob1_starting_pose, rob1_vel=0.75, rob1_acc=0.75,
+                                        rob2_pose=rob2_back_pose, rob2_vel=0.75, rob2_acc=0.75)
+
+                # ##### Rob1: 물체 잡고 서랍에 넣기 #####
+                # : 로봇의 현재 위치 기록
+                target_pose[:2] = -target_pose[:2]
+
+                # self.rob1.movej(self.home, 0.7, 0.7)
+                # self.rob1.movej(rob1_starting_pose, 0.7, 0.7)
+                rob1_loc = self.rob1.getl()
+                rob1_loc[0] = rob1_loc[0] - 0.0015
+                rob1_preloc = copy.deepcopy(rob1_loc)
+                # : 로봇의 x좌표먼저 이동
+                rob1_preloc[0] = target_pose[0]
+                self.rob1.movel(rob1_preloc, 1.0, 1.0)
+
+                # : 타겟 좌표로 이동
+                rob1_loc[:2] = target_pose[:2]
+                rob1_loc[1] = rob1_loc[1] + 0.185
+                self.rob1.movel(rob1_loc, 1.0, 1.0)
+
+                robot_joint = self.rob1.getj()
+                obj_angle, w, h = self.angle_detect(target_cls)
+                if obj_angle < -120:
+                    robot_joint[5] = np.deg2rad(obj_angle + np.rad2deg(robot_joint[0]) + 180.0)
+                elif 120 < obj_angle:
+                    robot_joint[5] = np.deg2rad(obj_angle + np.rad2deg(robot_joint[0]) - 180.0)
+                else:
+                    robot_joint[5] = np.deg2rad(obj_angle + np.rad2deg(robot_joint[0]))
+                self.rob1.movej(robot_joint, acc=1.0, vel=1.0)
+
+                env_show = self.env_show.copy()
+                env_show = cv2.ellipse(env_show, (int(target_imgmean[1] / 2), int(target_imgmean[0] / 2)), (0, 10),
+                                       obj_angle, 0, 360, (0, 128, 0))
+                env_show = cv2.ellipse(env_show, (int(target_imgmean[1] / 2), int(target_imgmean[0] / 2)), (40, 0),
+                                       obj_angle, 0, 360, (0, 255, 0))
+                cv2.imshow("env_show", env_show)
+                cv2.moveWindow("env_show", 0, 0)
+                cv2.waitKey(2)
+
+                robot_loc_after = self.rob1.getl()
+                robot_loc_after[2] = copy.deepcopy(robot_loc_after[2]) - 0.248
+                self.rob1.movel(robot_loc_after, 1.0, 1.0)
+
+                self.gripper1.close_gripper()
+
+                # rob2_loc[2] = rob2_loc[2] + 0.255
+                self.rob1.movel(rob1_loc, 1.0, 1.0)
+
+    def grasp_place_drawer_obj(self, drawer_pos=None):
+
+        rob1_starting_pose = np.deg2rad([-90.0, -80.0, -120.0, -70.0, 90.0, 0])
+        rob2_back_pose = np.deg2rad([0.0, -180.0, 90.0, -90.0, 0.0, 0.0])
+        self.robot_dual_control(rob_total_pose=self.home, vel=1.0, acc=1.0)
+        self.robot_dual_control(rob1_pose=rob1_starting_pose, rob1_vel=0.75, rob1_acc=0.75,
+                                rob2_pose=rob2_back_pose, rob2_vel=0.75, rob2_acc=0.75)
+        rob1_loc = self.rob1.getl()
+        rob1_loc[0] = -drawer_pos[0]
+        rob1_loc[1] = -drawer_pos[1] + 0.19
+        rob1_loc[2] = -drawer_pos[2] + 0.06
+        self.rob1.movel(rob1_loc, 1.0, 1.0)
+        self.gripper1.open_gripper()
 
     # ---- ---- ---- ---- Pen ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
     # = 20200107
@@ -932,6 +1232,7 @@ class Robot:
                 # self.rob1.movej(back_pose, 1.0, 1.0)
                 starting_pose = np.deg2rad([90.0, -90.0, 110.0, -110.0, -90.0, 0.0])
                 # self.rob2.movej(starting_pose, 1.0, 1.0)
+                self.robot_dual_control(rob_total_pose=self.home, vel=1.0, acc=1.0)
                 self.robot_dual_control(rob1_pose=back_pose, rob1_vel=1.0, rob1_acc=1.0,
                                         rob2_pose=starting_pose, rob2_vel=0.75, rob2_acc=0.75)
 
@@ -943,12 +1244,12 @@ class Robot:
                 rob2_preloc = copy.deepcopy(rob2_loc)
                 # : 로봇의 x좌표먼저 이동
                 rob2_preloc[0] = target_pose[0]
-                self.rob2.movel(rob2_preloc, 0.5, 0.5)
+                self.rob2.movel(rob2_preloc, 1.0, 1.0)
 
                 # : 타겟 좌표로 이동
                 rob2_loc[:2] = target_pose[:2]
                 # rob2_loc[2] = rob2_loc[2]
-                self.rob2.movel(rob2_loc, 0.5, 0.5)
+                self.rob2.movel(rob2_loc, 1.0, 1.0)
 
 
                 # 그립퍼 회전
@@ -970,15 +1271,15 @@ class Robot:
                 # # self.rob2.movej(robot_joint, acc=0.2, vel=0.2)
 
                 robot_loc_after = self.rob2.getl()
-                robot_loc_after[0] = copy.deepcopy(robot_loc_after[0]) - 0.05*sin(np.deg2rad(gripper_angle))
-                robot_loc_after[1] = copy.deepcopy(robot_loc_after[1]) - 0.05*cos(np.deg2rad(gripper_angle))
+                robot_loc_after[0] = copy.deepcopy(robot_loc_after[0]) + 0.03*cos(np.deg2rad(gripper_angle))
+                robot_loc_after[1] = copy.deepcopy(robot_loc_after[1]) + 0.03*sin(np.deg2rad(gripper_angle))
                 robot_loc_after[2] = copy.deepcopy(robot_loc_after[2]) - 0.205
-                self.rob2.movel(robot_loc_after, 0.5, 0.5)
+                self.rob2.movel(robot_loc_after, 1.0, 1.0)
 
                 self.gripper2.close_gripper()
 
                 # rob2_loc[2] = rob2_loc[2] + 0.255
-                self.rob2.movel(rob2_loc, 0.5, 0.5)
+                self.rob2.movel(rob2_loc, 1.0, 1.0)
                 holder_lpose = self.rob2.getl()
 
                 # : placing holder 로 이어짐
@@ -999,10 +1300,11 @@ class Robot:
 
                 self.rob2.movej(starting_pose, 1.0, 1.0)
                 # self.gripper2.open_gripper()
+                aaaaaa = 0
                 # holder_pose = copy.deepcopy(rob2_loc)
 
                 ################################################################################################
-                env_show = self.env_show.copy()  # x, y
+                env_show = self.env_show.copy()  # x,            y
                 start_point = [110, 600]
                 placing_point = [160, 560]
                 l = np.array(placing_point) - np.array(start_point)
@@ -1181,7 +1483,7 @@ class Robot:
 
                 robot1_loc_after = self.rob1.getl()
                 #robot1_loc_after[2] = copy.deepcopy(robot1_loc_after[2]) - 0.182  # 0.184    # 0.1875
-                robot1_loc_after[2] = copy.deepcopy(robot1_loc_after[2]) - 0.167
+                robot1_loc_after[2] = copy.deepcopy(robot1_loc_after[2]) - 0.1975
                 self.rob1.movel(robot1_loc_after, 0.5, 0.5)
 
                 self.gripper1.close_gripper()
@@ -1193,6 +1495,7 @@ class Robot:
 
                 self.rob1.movej(back_pose, 1.0, 1.0)
                 # self.gripper2.open_gripper()
+                aaaaaa = 0
 
             else:
                 print("%s is out of Safe Boundary" % RL_Obj_List[self.target_cls][0], file=sys.stderr)
