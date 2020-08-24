@@ -27,7 +27,7 @@ gripper_robot_ip = "192.168.0.29"  # 왼쪽 팔
 class Agent:
     """
     Main class that handles total procedure of test.
-    It has three member functions: object picking, 
+    It has three test member functions.
     """
     def __init__(self, rob):
         self.robot = rob
@@ -59,7 +59,7 @@ class Agent:
     def run_object_picking_test(self):
         """
         Run object picking test.
-        This test pick up objects
+        This test pick up objects and put them in basket.
         """
         rob = self.robot
         episode_num = 1

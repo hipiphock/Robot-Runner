@@ -277,6 +277,9 @@ class Robot:
     # 		return None, None
 
     def angle_detect(self, target_cls):
+        """
+        Detects angle.
+        """
         obj_angle = 1.1
         w = 1.1
         h = 1.1
@@ -447,11 +450,12 @@ class Robot:
 
     # = 각도 검출
     def get_boxed_angle(self, target_cls):
-        cls_points = np.argwhere(self.seg_img == target_cls)  # 새로운 어레이가 타겟 클래스랑 같은 좌표를 찾음
+        # 새로운 array가 target class와 같은 좌표를 찾음
+        cls_points = np.argwhere(self.seg_img == target_cls)
         empty_img = np.zeros((720, 1280), dtype=np.uint8)
 
-        for [y, x] in cls_points:  # 타겟클레스와 같은 점들에 대해
-            empty_img[y, x] = 64  # 표시전용 (아무숫자 가능)
+        for [y, x] in cls_points:   # 타겟클레스와 같은 점들에 대해
+            empty_img[y, x] = 64    # 표시전용 (아무숫자 가능)
 
         time_str = time.strftime('%Y%m%d-%H-%M-%S', time.localtime(time.time()))
         # >> check
@@ -659,32 +663,35 @@ class Robot:
 
     def grasp_placing_box(self, target_cls, target_imgmean, obj_pos=None, ):
         """
-        Main function used for object picking test
+        Main function used for object picking test.
         """
         if obj_pos is None:
-            print("!!>>sys : target_pose is None")
+            logging.warning("obj_pos is None.")
             return
         else:
             target_pose = copy.deepcopy(obj_pos)  # --
-            print("-->> target_pose : {}".format(target_pose))
+            logging.debug("target_pose = {}".format(target_pose))
 
             if (self.x_boundary[0] < target_pose[0] < self.x_boundary[1]) and (
                     self.y_boundary[0] < target_pose[1] < self.y_boundary[1]):
 
-                # type_ = "LONG"
-                # num_scattering = 5
-                # for _ in range(num_scattering):
-                #     # Scattering path
-                #     angle, w, h = self.angle_detect(target_cls)
-                #     temp_seg = np.copy(self.seg_img)
-                #     if type_ == "LONG":
-                #         path = non_linear_scatter(temp_seg, target_cls, 90 + angle, h)
-                #         if path is "linear":
-                #             path = linear_scatter(temp_seg, target_cls, 90 + angle, h)
-                #     else:
-                #         path = non_linear_scatter(temp_seg, target_cls, angle, w)
-                #         if path is "linear":
-                #             path = linear_scatter(temp_seg, target_cls, angle, w)
+                ### @MEMO: real scattering code part
+                type_ = "LONG"
+                num_scattering = 5
+                for _ in range(num_scattering):
+                    # Scattering path
+                    angle, w, h = self.angle_detect(target_cls)
+                    temp_seg = np.copy(self.seg_img)
+                    if type_ == "LONG":
+                        # What is type_ LONG?
+                        path = non_linear_scatter(temp_seg, target_cls, 90 + angle, h)
+                        if path is "linear":
+                            path = linear_scatter(temp_seg, target_cls, 90 + angle, h)
+                    else:
+                        path = non_linear_scatter(temp_seg, target_cls, angle, w)
+                        if path is "linear":
+                            path = linear_scatter(temp_seg, target_cls, angle, w)
+                ### End of scattering
 
                 back_pose = np.deg2rad([0.0, 0.0, -90.0, -90.0, 0.0, 0.0])
                 # self.rob1.movej(back_pose, 1.0, 1.0)
@@ -751,7 +758,6 @@ class Robot:
                 self.rob2.movej(placing_pose, 1.5, 1.5)
                 self.gripper2.open_gripper()
                 self.rob2.movej(starting_pose, 1.5, 1.5)
-                aaaaaa = 0
 
             else:
                 print("%s is out of Safe Boundary" % RL_Obj_List[self.target_cls][0], file=sys.stderr)
@@ -993,11 +999,10 @@ class Robot:
 
                 self.rob2.movej(starting_pose, 1.0, 1.0)
                 # self.gripper2.open_gripper()
-                aaaaaa = 0
                 # holder_pose = copy.deepcopy(rob2_loc)
 
                 ################################################################################################
-                env_show = self.env_show.copy()  # x,            y
+                env_show = self.env_show.copy()  # x, y
                 start_point = [110, 600]
                 placing_point = [160, 560]
                 l = np.array(placing_point) - np.array(start_point)
@@ -1188,7 +1193,6 @@ class Robot:
 
                 self.rob1.movej(back_pose, 1.0, 1.0)
                 # self.gripper2.open_gripper()
-                aaaaaa = 0
 
             else:
                 print("%s is out of Safe Boundary" % RL_Obj_List[self.target_cls][0], file=sys.stderr)

@@ -1,4 +1,5 @@
 import numpy as np
+import logging
 import time
 import cv2
 from sklearn.svm import SVC
@@ -159,17 +160,23 @@ def clip(pt, y, x):
 
 def non_linear_scatter(seg_img, target_cls, angle, w):
     """
-    I don't know what this is...
+    Returns non linear scattering path.
+    @seg_img: segment image
+    @target_cls: target class
+    @angle: 각?
+    @w: width? 하지만 다른데에서는 h를 받을 때도 있더라
     """
+    # Q: dilated_img가 뭐하는 애지? 커진 이미지?
     dilated_img, dilated_img2, neighbored_list, neighbored_list_org = 
-            find_neighboring_obj(seg_img, target_cls, angle, w)
+                find_neighboring_obj(seg_img, target_cls, angle, w) # neighboring object를 가져오나보다.
     if neighbored_list is None or neighbored_list == []:
+        logging.warning("Empty neighbored_list.")
         return None
 
-    if np.all(np.unique(dilated_img) != np.unique(dilated_img2)):
+    if np.all(np.unique(dilated_img) != np.unique(dilated_img2)):   # 이건 왜 하는거야?
         check_id = False
-        for n_idx in np.unique(dilated_img):  # 1, 4, 5, 8, 14 , 16
-            for s_idx in neighbored_list:  # 8, 10
+        for n_idx in np.unique(dilated_img):    # 1, 4, 5, 8, 14, 16
+            for s_idx in neighbored_list:       # 8, 10 이 숫자들은 뭐야
                 if n_idx == s_idx:
                     check_id = True
                 else:
@@ -186,14 +193,14 @@ def non_linear_scatter(seg_img, target_cls, angle, w):
 
     b = np.zeros((1, 2))
 
-    for idx in neighbored_list_org:  # 주변 물체들 픽셀 위치를 검사
+    for idx in neighbored_list_org:             # 주변 물체들 픽셀 위치를 검사
         neighbor_pt = np.argwhere(dilated_img == idx).astype("float64")  # 세그맨테이션 픽셀들이 주변물체면 저장
-        b = np.concatenate((b, neighbor_pt))  # 맨 앞 0,0 에 뒤로 붙임
-        n_size += neighbor_pt.shape[0]  # 주변 물체들의 포인트 갯수를 타겟 포인트 갯수와 더함
+        b = np.concatenate((b, neighbor_pt))    # 맨 앞 0, 0 에 뒤로 붙임
+        n_size += neighbor_pt.shape[0]          # 주변 물체들의 포인트 갯수를 타겟 포인트 갯수와 더함
 
     # Labeling
-    label = np.zeros(n_size)  # 1렬 0 행렬 생성
-    label[target_pt.shape[0]:] = 1  # -> target = 0, neighbor = 1
+    label = np.zeros(n_size)        # 1렬 0 행렬 생성
+    label[target_pt.shape[0]:] = 1  # target = 0, neighbor = 1
 
     data = np.concatenate((target_pt, b[1:]))  # 타겟 포인트와 주변물체 포인트를 합침
     temp = np.array([data[:, 1], data[:, 0]]).transpose()  # 모두 x,y 좌표에 맞게 변환
@@ -254,16 +261,16 @@ def non_linear_scatter(seg_img, target_cls, angle, w):
     t_idx = int(np.argmax(space_dist).squeeze())
 
     if is_loop:
-        start = space_idx[t_idx][1]
-        end = space_idx[t_idx][0]
+        start   = space_idx[t_idx][1]
+        end     = space_idx[t_idx][0]
 
         if start > end:
             main_path = np.concatenate((target_path[start:], target_path[:end]), axis=0)
         else:
             main_path = target_path[start:end]
     else:
-        start = space_idx[t_idx][0]
-        end = space_idx[t_idx][1]
+        start   = space_idx[t_idx][0]
+        end     = space_idx[t_idx][1]
 
         if start == 0 and end != t_path_len - 1:
             start = np.copy(end)
@@ -335,7 +342,6 @@ def non_linear_scatter(seg_img, target_cls, angle, w):
                         main_path = np.concatenate((main_path, temp_path), axis=0)
                     else:
                         main_path = np.concatenate((main_path, target_path[end:t_et + 1]), axis=0)
-
                 break
 
     else:
