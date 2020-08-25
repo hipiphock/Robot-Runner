@@ -403,7 +403,7 @@ def find_neighboring_obj(seg, target, angle, w):
     binary_image_array = np.zeros(shape=(720, 1280), dtype=np.uint8)
     target_list = np.argwhere(np.array(seg) == target)
 
-    print("%d angle & short axis : %f, %f" % (target, angle, w))
+    logging.info("%d angle & short axis : %f, %f" % (target, angle, w))
 
     [binary_image_array.itemset((y, x), 255) for [y, x] in target_list]
 
