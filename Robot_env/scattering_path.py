@@ -167,7 +167,7 @@ def non_linear_scatter(seg_img, target_cls, angle, w):
     @w: width? 하지만 다른데에서는 h를 받을 때도 있더라
     """
     # Q: dilated_img가 뭐하는 애지? 커진 이미지?
-    dilated_img, dilated_img2, neighbored_list, neighbored_list_org = 
+    dilated_img, dilated_img2, neighbored_list, neighbored_list_org = \
                 find_neighboring_obj(seg_img, target_cls, angle, w) # neighboring object를 가져오나보다.
     if neighbored_list is None or neighbored_list == []:
         logging.warning("Empty neighbored_list.")
@@ -255,11 +255,9 @@ def non_linear_scatter(seg_img, target_cls, angle, w):
     # ???
     # 가장 넓은 공간 찾기.
     t_idx = int(np.argmax(space_dist).squeeze())
-
     if is_loop:
         start   = space_idx[t_idx][1]
         end     = space_idx[t_idx][0]
-
         if start > end:
             main_path = np.concatenate((target_path[start:], target_path[:end]), axis=0)
         else:
@@ -267,34 +265,26 @@ def non_linear_scatter(seg_img, target_cls, angle, w):
     else:
         start   = space_idx[t_idx][0]
         end     = space_idx[t_idx][1]
-
         if start == 0 and end != t_path_len - 1:
             start = np.copy(end)
             end = end
         elif start != 0 and end == t_path_len - 1:
             start = start
             end = start
-
         main_path = target_path[start:end]
-
     if is_loop:
         # Start 늘리기
         for pt in range(t_path_len - 1):
             t_st = start - pt
-
             if t_st < 0:
                 t_st = t_path_len - t_st
-
             if t_st > t_path_len:
                 return "linear"
-
             chk_surr = False
-
             # starting point 주변 픽셀이 배경인지 확인
             near_size = 5
             if target_cls in [5, 8, 9, 14, 11]:
                 near_size = 7
-
             for [y, x] in dil(target_path[t_st], near_size):
                 try:
                     if seg_img[y, x] != 16:
@@ -303,7 +293,6 @@ def non_linear_scatter(seg_img, target_cls, angle, w):
                 except:
                     chk_surr = True
                     break
-
             if chk_surr:
                 continue
             else:
@@ -312,14 +301,11 @@ def non_linear_scatter(seg_img, target_cls, angle, w):
                     main_path = np.concatenate((temp_path, main_path), axis=0)
                 else:
                     main_path = np.concatenate((target_path[t_st:start], main_path), axis=0)
-
                 break
-
         # End 늘리기
         for pt in range(t_path_len):
             t_et = (end + pt) % t_path_len
             chk_surr = False
-
             for [y, x] in dil(target_path[t_et], 1):
                 try:
                     if seg_img[y, x] != 16:
@@ -328,7 +314,6 @@ def non_linear_scatter(seg_img, target_cls, angle, w):
                 except:
                     chk_surr = True
                     break
-
             if chk_surr:
                 continue
             else:
@@ -339,18 +324,15 @@ def non_linear_scatter(seg_img, target_cls, angle, w):
                     else:
                         main_path = np.concatenate((main_path, target_path[end:t_et + 1]), axis=0)
                 break
-
     else:
         # Start 줄이기
         for pt in range(t_path_len):
             t_st = start - pt
             chk_surr = False
-
             # starting point 주변 픽셀이 배경인지 확인
             near_size = 5
             if target_cls in [5, 8, 9, 14, 11]:
                 near_size = 7
-
             for [y, x] in dil(target_path[t_st], near_size):
                 try:
                     if seg_img[y, x] != 16:
@@ -389,40 +371,45 @@ def non_linear_scatter(seg_img, target_cls, angle, w):
 
     return main_path
 
+# helper function that displays image
+def check_image(target, cv_obj, window_name):
+    cv2.namedWindow(window_name)
+    img_k = cv_obj * 255
+    cv2.imshow(window_name, img_k)
+    cv2.moveWindow(window_name, 2560 - 720, 640)
+    cv2.waitKey(2)
+    cv2.imwrite("{}_kernel".format(target) + ".png", img_k)
 
 def find_neighboring_obj(seg, target, angle, w):
     """
     Returns neightboring object lists of the target.
-    @seg: segment
-    @target: target object
-    @angle: 
-    @w: 
+    ***Problem***
+     - Not giving neighboring objects correctly. 
     """
+    # delate 뜻: 확장하다. 확대하다.
     delated_seg = np.copy(seg)
     delated_seg2 = np.copy(seg)
     binary_image_array = np.zeros(shape=(720, 1280), dtype=np.uint8)
-    target_list = np.argwhere(np.array(seg) == target)
+    target_list = np.argwhere(np.array(seg) == target)      # target에 맞는 segment 구하는듯
 
     logging.info("%d angle & short axis : %f, %f" % (target, angle, w))
 
     [binary_image_array.itemset((y, x), 255) for [y, x] in target_list]
 
     # 얼마나 팽창 연산을 수행할지를 결정하는 파라미터들
-    # if target in []:   # Big size objects
-    if target in [5, 8, 9, 14]:  # Big size objects
+    large_objects = [5, 6, 7, 8, 9, 10, 15, 34, 35, 38, 39, 40, 41]
+    if target in large_objects:  # Big size objects
         kernel_size = 9
         kernel_half = math.trunc(kernel_size / 2)
         kernelorg = np.zeros((kernel_size, kernel_size), np.uint8)
-        kernel = cv2.ellipse(kernelorg, (kernel_half, kernel_half), (kernel_half + 1, kernel_half - 1), angle, 0, 360, 1, -1)
+        kernel = cv2.ellipse(kernelorg, 
+                            (kernel_half, kernel_half), 
+                            (kernel_half + 1, kernel_half - 1), 
+                            angle, 0, 360, 1, -1)
         target_dilation = np.array(cv2.dilate(binary_image_array, kernel, iterations=3))
 
         # >> check
-        cv2.namedWindow("kernel")
-        img_k = kernel * 255
-        cv2.imshow("kernel", img_k)
-        cv2.moveWindow("kernel", 2560 - 720, 640)
-        cv2.waitKey(2)
-        cv2.imwrite("{}_kernel".format(target) + ".png", img_k)
+        check_image(target, kernel, "kernel")
 
         cv2.namedWindow("target_dilation")
         img_td = cv2.flip(target_dilation, 0)
@@ -431,8 +418,7 @@ def find_neighboring_obj(seg, target, angle, w):
         cv2.waitKey(2)
         cv2.imwrite("{}_target_dilation".format(target) + ".png", img_td)
         target_mod = target_dilation
-
-    else:
+    else:   # Small size objects
         kernel_size = 7
         kernel_half = math.trunc(kernel_size / 2)
         kernelorg = np.zeros((kernel_size, kernel_size), np.uint8)
@@ -443,12 +429,7 @@ def find_neighboring_obj(seg, target, angle, w):
         target_dilation = np.array(cv2.dilate(binary_image_array, kernel, iterations=4))
 
         # >> check
-        cv2.namedWindow("kernel")
-        img_k = kernel * 255
-        cv2.imshow("kernel", img_k)
-        cv2.moveWindow("kernel", 2560 - 720, 640)
-        cv2.waitKey(2)
-        cv2.imwrite("{}_kernel".format(target) + ".png", img_k)
+        check_image(target, kernel, "kernel")
 
         cv2.namedWindow("target_dilation")
         img_td = cv2.flip(target_dilation, 0)
@@ -471,7 +452,7 @@ def find_neighboring_obj(seg, target, angle, w):
 
     # -> k means 써서 물체 중심 찾고 중심을 255로 만들기...?
     # 아니면 깡 평균
-    if target in [5, 8, 9, 14]:  # Big size objects
+    if target in large_objects:  # Big size objects
         kernel_size = 11
         kernel_half = math.trunc(kernel_size / 2)
         kernelorg = np.zeros((kernel_size, kernel_size), np.uint8)
@@ -481,12 +462,7 @@ def find_neighboring_obj(seg, target, angle, w):
                                angle, 0, 360, 1, 1)
         target_dilation2 = np.array(cv2.dilate(binary_image_array2, kernel_1, iterations=4))
 
-        cv2.namedWindow("kernel_1")
-        img_k = kernel_1 * 255
-        cv2.imshow("kernel_1", img_k)
-        cv2.moveWindow("kernel_1", 2560 - 720 + 256, 640)
-        cv2.waitKey(2)
-        cv2.imwrite("test_kernel_1".format(target) + ".png", img_k)
+        check_image(target, kernel_1, "kernel_1")
 
         kernel_size2 = 11
         kernel_half2 = math.trunc(kernel_size2 / 2)
@@ -497,12 +473,7 @@ def find_neighboring_obj(seg, target, angle, w):
                                angle, 0, 360, 1, -1)
         target_mod2 = np.array(cv2.dilate(target_dilation2, kernel_2, iterations=1))
 
-        cv2.namedWindow("kernel_2")
-        img_k2 = kernel_2 * 255
-        cv2.imshow("kernel_2", img_k2)
-        cv2.moveWindow("kernel_2", 2560 - 720 + 256 + 128, 640)
-        cv2.waitKey(2)
-        cv2.imwrite("test_kernel_2".format(target) + ".png", img_k2)
+        check_image(target, kernel_2, "kernel_2")
 
         cv2.namedWindow("target_mod2")
         img_td2 = cv2.flip(target_mod2, 0)
@@ -521,12 +492,7 @@ def find_neighboring_obj(seg, target, angle, w):
                                angle, 0, 360, 1, 1)
         target_dilation2 = np.array(cv2.dilate(binary_image_array2, kernel_1, iterations=3))
 
-        cv2.namedWindow("kernel_1")
-        img_k = kernel_1 * 255
-        cv2.imshow("kernel_1", img_k)
-        cv2.moveWindow("kernel_1", 2560 - 720 + 256, 640)
-        cv2.waitKey(2)
-        cv2.imwrite("test_kernel_1".format(target) + ".png", img_k)
+        check_image(target, kernel_1, "kernel_1")
 
         kernel_size = 9
         kernel_half = math.trunc(kernel_size / 2)
@@ -537,12 +503,7 @@ def find_neighboring_obj(seg, target, angle, w):
                                angle, 0, 360, 1, -1)
         target_mod2 = np.array(cv2.dilate(target_dilation2, kernel_2, iterations=1))
 
-        cv2.namedWindow("kernel_2")
-        img_k2 = kernel_2 * 255
-        cv2.imshow("kernel_2", img_k2)
-        cv2.moveWindow("kernel_2", 2560 - 720 + 256 + 128, 640)
-        cv2.waitKey(2)
-        cv2.imwrite("test_kernel_2".format(target) + ".png", img_k2)
+        check_image(target, kernel_2, "kernel_2")
 
         cv2.namedWindow("target_mod2")
         img_td2 = cv2.flip(target_mod2, 0)
@@ -560,8 +521,8 @@ def find_neighboring_obj(seg, target, angle, w):
     bl_img = bl_img + (no1 / 255) * 128
     bl_img = bl_img + (no0 / 255) * 127
 
-    # con_img1, contour1, _ = cv2.findContours(no0, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)   # for opencv3
-    contour1, h = cv2.findContours(no0, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)             # for opencv4
+    con_img1, contour1, _ = cv2.findContours(no0, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)   # for opencv3
+    # contour1, h = cv2.findContours(no0, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)             # for opencv4
 
     for cnt in contour1:
         rect = cv2.minAreaRect(cnt)

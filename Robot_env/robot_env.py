@@ -500,20 +500,15 @@ class Robot:
         self.use_scatter = use_scatter
 
         if (use_scatter is False) or (num_scattering is None):
-            print("-->>sys : use_scatter is False")
-
+            logging.warning("use_scatter is False")
         elif (target_cls is None) or (obj_pos is None) or (target_pxl is None):
-            print("!!>>sys : target_pose is None")
+            logging.warning("target_pose is None")
         else:
-
-            target_pose = copy.deepcopy(obj_pos)  # --
-
-            if (self.x_boundary[0] < target_pose[0] < self.x_boundary[1]) and (
-                    self.y_boundary[0] < target_pose[1] < self.y_boundary[1]):
+            target_pose = copy.deepcopy(obj_pos)    
+            if (self.x_boundary[0] < target_pose[0] < self.x_boundary[1]) and 
+                    (self.y_boundary[0] < target_pose[1] < self.y_boundary[1]):
                 back_pose = np.deg2rad([0.0, 0.0, -90.0, -90.0, 0.0, 0.0])
-                # self.rob1.movej(back_pose, 1.0, 1.0)
                 starting_pose = np.deg2rad([90.0, -90.0, 110.0, -110.0, -90.0, 0.0])
-                # self.rob2.movej(starting_pose, 1.0, 1.0)
                 self.robot_dual_control(rob1_pose=back_pose, rob1_vel=1.0, rob1_acc=1.0,
                                         rob2_pose=starting_pose, rob2_vel=0.75, rob2_acc=0.75)
 
@@ -537,8 +532,7 @@ class Robot:
                 #
                 # self.rob2.movel(rob2_preloc, 0.5, 0.5)
                 # self.rob2.movej(starting_pose, 1.0, 1.0)
-                # aaaaaa = 0
-
+                
                 type="LONG"
                 for _ in range(num_scattering):
                 	# Scattering path
@@ -743,59 +737,6 @@ class Robot:
                 # 	self.rob2.movej(self.home, 2, 2)
                 # 	self.gripper2.open_gripper()
 
-    # # = 대체 (현재 안쓰지만 참고용)
-    # def grasp_placing_box_old(self, target_cls):
-    #     pass
-    #     #     # Detecting object pose
-    #     #     self.env_img_update()  # : 세그 / 컬러세그
-    #     #
-    #     #     if target_cls in (np.unique(self.seg_img)):
-    #     #         _, self.obj_pos = self.get_obj_pos(target_cls)
-    #     #     else:
-    #     #         self.obj_pos = None
-    #     #
-    #     #     if self.obj_pos is None:
-    #     #         print("Failed to find %s" % RL_Obj_List[self.target_cls][0], file=sys.stderr)
-    #     #         return
-    #     #
-    #     #     if (self.x_boundary[0] < self.obj_pos[0] < self.x_boundary[1]) and (
-    #     #             self.y_boundary[0] < self.obj_pos[1] < self.y_boundary[1]):
-    #     #         self.goal = np.append(self.obj_pos + np.array([0, 0, self.z_lift]), [0, -3.14, 0])
-    #     #     else:
-    #     #         print("%s is out of Safe Boundary" % RL_Obj_List[self.target_cls][0], file=sys.stderr)
-    #     #         self.obj_pos = None
-    #     #         return
-    #     #
-    #     #     self.rob1.movej(self.initial_pose1, self.acc, self.vel)
-    #     #
-    #     #     obj_angle, w, h = self.angle_detect(target_cls)
-    #     #     obj_angle = np.deg2rad(obj_angle)
-    #     #     print("Target : {}, w : {}".format(RL_Obj_List[self.target_cls][0], w))
-    #     #
-    #     #     gripper_init_pose = 220 - int(round(9.7 * w))
-    #     #     if gripper_init_pose < 13:
-    #     #         gripper_init_pose = 13
-    #     #     if target_cls == 0:
-    #     #         gripper_init_pose = 130
-    #     #     self.gripper1.gripper_action(gripper_init_pose)
-    #     #     rotated_joint_position = np.append(
-    #     #         self.rob1.getj()[:-1], self.rob1.getj()[-1] - obj_angle)
-    #     #     rotated_pose = self.solve_FK(rotated_joint_position)
-    #     #
-    #     #     # Z-Value per Object
-    #     #     self.obj_pos[2] = self.z_tray + 0.01
-    #     #
-    #     #     # Grasping Task
-    #     #     move_list = []
-    #     #     self.goal[3:] = rotated_pose[3:]
-    #     #     move_list.append(self.goal)
-    #     #     move_list.append(np.append(self.obj_pos, rotated_pose[3:]))
-    #     #     self.rob1.movels(move_list, 0.3, 0.3, radius=0.03)
-    #     #     self.gripper1.close_gripper()
-    #     #     self.obj_pos[2] += self.z_lift
-    #     #     goal = np.append(self.obj_pos, self.rob1.getl()[3:])  # Initial point
-    #     #     self.rob1.movel(goal, 1, 1)
-    #     #     self.rob1.movej(self.initial_pose1, self.acc, self.vel)
 
     # ---- ---- ---- ---- Picking ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
     # = 20191100
@@ -828,11 +769,8 @@ class Robot:
                 #             path = linear_scatter(temp_seg, target_cls, angle, w)
 
                 back_pose = np.deg2rad([0.0, 0.0, -90.0, -90.0, 0.0, 0.0])
-                # self.rob1.movej(back_pose, 1.0, 1.0)
                 starting_pose = np.deg2rad([90.0, -100.0, 120.0, -110.0, -90.0, 0])
                 placing_pose = np.deg2rad([90.0, -120.0, 140.0, -110.0, -90.0, 0])
-
-                # self.rob2.movej(starting_pose, 1.0, 1.0)
                 self.robot_dual_control(rob1_pose=back_pose, rob1_vel=1.0, rob1_acc=1.0,
                                         rob2_pose=starting_pose, rob2_vel=0.75, rob2_acc=0.75)
 
