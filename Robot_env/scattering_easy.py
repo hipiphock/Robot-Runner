@@ -12,7 +12,14 @@ Solution for no.1
 Solution for no.2
 1. 두 물건 사이에 있는 틈으로 gripper를 close한 채로 밀어넣는다.
 2. 옆에 있는 물건을 옆으로 친다, 또는 밀어낸다.
+
+Logistics
+1. Get neightboring objects from one object
+    1. select one object.
+    2. get distance from other objects
+    3. if distance is small, then that is neighboring object
+2. 
 """
 
 def scatter():
-    
+    pass

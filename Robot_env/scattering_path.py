@@ -6,6 +6,7 @@ from sklearn.svm import SVC
 from matplotlib import pyplot as plt
 import math
 
+large_objects = [5, 6, 7, 8, 9, 10, 15, 34, 35, 38, 39, 40, 41] # 일단 대충 큰 object들만 모아둠
 
 def split_path(seg_img, neighbored_list, target_path):
     space_idx = []
@@ -100,11 +101,9 @@ def dil(st, val=1):
 def connect_line(edge, st):
     line = np.copy(st)
     edge[st[0], st[1]] = 0
-
     a = 0
     while a != 8:
         surr = dil(st)
-
         for [y, x] in surr:
             try:
                 if edge[y, x] != 0:
@@ -117,7 +116,6 @@ def connect_line(edge, st):
                     a += 1
             except:
                 a += 1
-
     return line
 
 
@@ -341,19 +339,15 @@ def non_linear_scatter(seg_img, target_cls, angle, w):
                 except:
                     chk_surr = True
                     break
-
             if chk_surr:
                 continue
             else:
                 main_path = target_path[t_st:start]
                 break
-
         # End 늘리기
         for pt in range(t_path_len):
             t_et = end + pt
-
             chk_surr = False
-
             for [y, x] in dil(target_path[t_et], 2):
                 try:
                     if seg_img[y, x] != 16:
@@ -362,13 +356,11 @@ def non_linear_scatter(seg_img, target_cls, angle, w):
                 except:
                     chk_surr = False
                     break
-
             if chk_surr:
                 continue
             else:
                 main_path = np.concatenate((main_path, target_path[end:t_et]), axis=0)
                 break
-
     return main_path
 
 # helper function that displays image
@@ -397,7 +389,6 @@ def find_neighboring_obj(seg, target, angle, w):
     [binary_image_array.itemset((y, x), 255) for [y, x] in target_list]
 
     # 얼마나 팽창 연산을 수행할지를 결정하는 파라미터들
-    large_objects = [5, 6, 7, 8, 9, 10, 15, 34, 35, 38, 39, 40, 41]
     if target in large_objects:  # Big size objects
         kernel_size = 9
         kernel_half = math.trunc(kernel_size / 2)

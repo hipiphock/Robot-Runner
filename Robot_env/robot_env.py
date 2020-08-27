@@ -505,7 +505,7 @@ class Robot:
             logging.warning("target_pose is None")
         else:
             target_pose = copy.deepcopy(obj_pos)    
-            if (self.x_boundary[0] < target_pose[0] < self.x_boundary[1]) and 
+            if (self.x_boundary[0] < target_pose[0] < self.x_boundary[1]) and \
                     (self.y_boundary[0] < target_pose[1] < self.y_boundary[1]):
                 back_pose = np.deg2rad([0.0, 0.0, -90.0, -90.0, 0.0, 0.0])
                 starting_pose = np.deg2rad([90.0, -90.0, 110.0, -110.0, -90.0, 0.0])
