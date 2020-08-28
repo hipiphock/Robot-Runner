@@ -431,63 +431,35 @@ def find_neighboring_obj(seg, target, angle, w):
     # 아니면 깡 평균
     if target in large_objects:  # Big size objects
         kernel_size = 11
-        kernel_half = math.trunc(kernel_size / 2)
-        kernelorg = np.zeros((kernel_size, kernel_size), np.uint8)
-        kernel_1 = cv2.ellipse(kernelorg, 
-                               (kernel_half, kernel_half), 
-                               (kernel_half, 0), 
-                               angle, 0, 360, 1, 1)
-        target_dilation2 = np.array(cv2.dilate(binary_image_array2, kernel_1, iterations=4))
-
-        check_image(target, kernel_1, "kernel_1")
-
-        kernel_size2 = 11           # kernel2는 뭐하는 애일까?
-        kernel_half2 = math.trunc(kernel_size2 / 2)
-        kernelorg2 = np.zeros((kernel_size2, kernel_size2), np.uint8)
-        kernel_2 = cv2.ellipse(kernelorg2, 
-                               (kernel_half2, kernel_half2), 
-                               (kernel_half2 - 1, kernel_half2 - 1),    # 타원 모양이 조금 다른거 같은데?
-                               angle, 0, 360, 1, -1)
-        target_mod2 = np.array(cv2.dilate(target_dilation2, kernel_2, iterations=1))
-
-        check_image(target, kernel_2, "kernel_2")
-
-        cv2.namedWindow("target_mod2")
-        img_td2 = cv2.flip(target_mod2, 0)
-        cv2.imshow("target_mod2", img_td2)
-        cv2.moveWindow("target_mod2", 2560 - 720 + 256 + 128, 680)
-        cv2.waitKey(2)
-        cv2.imwrite("{}_target_mod2".format(target) + ".png", img_td2)
-
-    else:
+        iteration_num = 4
+    else
         kernel_size = 9
-        kernel_half = math.trunc(kernel_size / 2)
-        kernelorg = np.zeros((kernel_size, kernel_size), np.uint8)
-        kernel_1 = cv2.ellipse(kernelorg, 
-                               (kernel_half, kernel_half), 
-                               (kernel_half, 0), 
-                               angle, 0, 360, 1, 1)
-        target_dilation2 = np.array(cv2.dilate(binary_image_array2, kernel_1, iterations=3))
+        iteration_num = 3
+    kernel_half = math.trunc(kernel_size / 2)
 
-        check_image(target, kernel_1, "kernel_1")
+    kernelorg = np.zeros((kernel_size, kernel_size), np.uint8)
+    kernel_1 = cv2.ellipse(kernelorg,
+                           (kernel_half, kernel_half),
+                           (kernel_half, 0),
+                           angle, 0, 360, 1, 1)
+    target_dilation2 = np.array(cv2.dilate(binary_image_array2, kernel_1, iteration_num))
+    check_image(target, kernel_1, "kernel_1")
 
-        kernel_size = 9
-        kernel_half = math.trunc(kernel_size / 2)
-        kernelorg = np.zeros((kernel_size, kernel_size), np.uint8)
-        kernel_2 = cv2.ellipse(kernelorg, 
-                               (kernel_half, kernel_half), 
-                               (kernel_half - 1, kernel_half - 1), 
-                               angle, 0, 360, 1, -1)
-        target_mod2 = np.array(cv2.dilate(target_dilation2, kernel_2, iterations=1))
+    kernelorg2 = np.zeros((kernel_size, kernel_size), np.uint8)
+    kernel_2 = cv2.ellipse(kernelorg2,
+                           (kernel_half, kernel_half),
+                           (kernel_half - 1, kernel_half - 1),    # 타원 모양이 조금 다른거 같은데?
+                           angle, 0, 360, 1, -1)
+    target_mod2 = np.array(cv2.dilate(target_dilation2, kernel_2, iterations=1))
+    check_image(target, kernel_2, "kernel_2")
 
-        check_image(target, kernel_2, "kernel_2")
+    cv2.namedWindow("target_mod2")
+    img_td2 = cv2.flip(target_mod2, 0)
+    cv2.imshow("target_mod2", img_td2)
+    cv2.moveWindow("target_mod2", 2560 - 720 + 256 + 128, 680)
+    cv2.waitKey(2)
+    cv2.imwrite("{}_target_mod2".format(target) + ".png", img_td2)
 
-        cv2.namedWindow("target_mod2")
-        img_td2 = cv2.flip(target_mod2, 0)
-        cv2.imshow("target_mod2", img_td2)
-        cv2.moveWindow("target_mod2", 2560 - 720 + 256 + 128, 680)
-        cv2.waitKey(2)
-        cv2.imwrite("{}_target_mod2".format(target) + ".png", img_td2)
     # ---------------------------------------------------
 
     original_seg = binary_image_array.copy()     # 원 물체 세그
