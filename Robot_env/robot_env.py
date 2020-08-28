@@ -104,7 +104,7 @@ class Robot:
         self.use_scatter = True
 
         self.x_boundary = [-0.810, -0.245]  # : 72번 기준 ㅡ
-        self.y_boundary = [-0.305, 0.515]  # : 72번 기준 l
+        self.y_boundary = [-0.305, 0.515]   # : 72번 기준 l
         self.z_lift = 0.015
         self.z_tray = -0.105
 
@@ -228,11 +228,6 @@ class Robot:
         # 	cv2.imshow("colorseg_show", colorseg_show)
         # 	cv2.moveWindow("colorseg_show", 0, 390)
         # 	cv2.waitKey(1)
-
-        # : for save
-        # img = self.global_cam.capture()
-        # cv2.imwrite("C:/Users/user/Desktop/RL_Project/IncorlGrasp_RL_20200206/_/obj_img/{}.png".format(1), img)
-        aaaaaa = 0
 
     # = rob2 Calibration to rob1 calibration
     def robot_action_mod(self, xyz):  # : 최소2.5mm 최대5mm정도의 오차발생 (크리티컬하지 않음)
@@ -379,14 +374,6 @@ class Robot:
         self.rob2.movel([-0.292500, -0.10883, 0.618, 2.2215, 2.2215, 0], 0.5, 0.5)  # : 디버깅용
         self.action_gripper_both_close()
 
-        # self.rob2.movel([-0.778320, -0.146700, -0.092, 2.2215, 2.2215, 0], 0.5, 0.5)  # : 디버깅용
-        # l_u2 = self.rob2.getl()
-        # self.rob2.movel([-0.778320, 0.362310, -0.092, 2.2215, 2.2215, 0], 0.5, 0.5)  # : 디버깅용
-        # r_u2 = self.rob2.getl()
-        # self.rob2.movel([-0.279445, 0.362310, -0.092, 2.2215, 2.2215, 0], 0.5, 0.5)  # : 디버깅용
-        # r_d2 = self.rob2.getl()
-        # self.rob2.movel([-0.279445, -0.146700, -0.092, 2.2215, 2.2215, 0], 0.5, 0.5)  # : 디버깅용
-        # l_d2 = self.rob2.getl()
         self.rob2.movel([-0.779220, -0.141110, -0.092, 2.2215, 2.2215, 0], 0.5, 0.5)  # : 디버깅용
         l_u2 = self.rob2.getl()
         self.rob2.movel([-0.776810, 0.354620, -0.092, 2.2215, 2.2215, 0], 0.5, 0.5)  # : 디버깅용
@@ -404,14 +391,6 @@ class Robot:
         self.rob1.movel([0.29158, -0.10883, 0.618, 2.2215, -2.2215, 0], 0.5, 0.5)  # : 디버깅용
         self.action_gripper_both_close()
 
-        # self.rob1.movel([0.779340,  0.325010, -0.0960, 2.2215, -2.2215, 0], 0.5, 0.5)  # : 디버깅용
-        # l_u1 = self.rob1.getl()
-        # self.rob1.movel([0.779340, -0.174880, -0.0960, 2.2215, -2.2215, 0], 0.5, 0.5)  # : 디버깅용
-        # r_u1 = self.rob1.getl()
-        # self.rob1.movel([0.277780, -0.174880, -0.0960, 2.2215, -2.2215, 0], 0.5, 0.5)  # : 디버깅용
-        # r_d1 = self.rob1.getl()
-        # self.rob1.movel([0.277780, 0.328880, -0.0960, 2.2215, -2.2215, 0], 0.5, 0.5)  # : 디버깅용
-        # l_d1 = self.rob1.getl()
         self.rob1.movel([0.780640, 0.326500, -0.0960, 2.2215, -2.2215, 0], 0.5, 0.5)  # : 디버깅용
         l_u1 = self.rob1.getl()
         self.rob1.movel([0.777835, -0.168790, -0.0960, 2.2215, -2.2215, 0], 0.5, 0.5)  # : 디버깅용
@@ -451,21 +430,11 @@ class Robot:
             empty_img[y, x] = 64  # 표시전용 (아무숫자 가능)
 
         time_str = time.strftime('%Y%m%d-%H-%M-%S', time.localtime(time.time()))
-        # >> check
-        # cv2.namedWindow("empty_img")
-        # cv2.imshow("empty_img", empty_img)
-        # cv2.moveWindow("empty_img", 0, 0)
-        # cv2.waitKey(2)
+
         cv2.imwrite("./_/test_img/{}__{}_empty_img".format(time_str, target_cls) + ".png", empty_img)
 
-        # ret, thr = cv2.threshold(empty_img, 1, 29, 0)  # ???? 29 ??????
         ret, thr = cv2.threshold(empty_img, 1, 127, 0)  # 스레스 홀딩했을시 출력할 값
 
-        # >> check
-        # cv2.namedWindow("thresholding(empty_img)")
-        # cv2.imshow("thresholding(empty_img)", thr)
-        # cv2.moveWindow("thresholding(empty_img)", 0, 0)
-        # cv2.waitKey(2)
         cv2.imwrite("./_/test_img/{}__{}_thresholding(empty_img)".format(time_str, target_cls) + ".png", thr)
 
         con_img, contour, _ = cv2.findContours(thr, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)  # ?? 경계선(등고선) 그리기?
@@ -481,11 +450,6 @@ class Robot:
             box_cont = np.int0(cv2.boxPoints(rect))
             box_img = cv2.drawContours(thr, [box_cont], 0, 255, 1)
 
-            # >> check
-            # cv2.namedWindow("drawContours(box_img)")
-            # cv2.imshow("drawContours(box_img)", box_img)  # contour
-            # cv2.moveWindow("drawContours(box_img)", 0, 0)
-            # cv2.waitKey(2)
             cv2.imwrite("./_/test_img/{}__{}_drawContours(box_img)".format(time_str, target_cls) + ".png", box_img)
 
             if w > h:  # Long axes
@@ -495,15 +459,15 @@ class Robot:
                 # print("target angle & short axis : %f, %f" % (angle, w))
                 return angle, w, h
 
-    # = 20200107
+    # TODO: enable scattering
     def scatter(self, target_cls, use_scatter, obj_pos=None, num_scattering=None, target_pxl=None):
         self.use_scatter = use_scatter
-
         if (use_scatter is False) or (num_scattering is None):
             logging.warning("use_scatter is False")
         elif (target_cls is None) or (obj_pos is None) or (target_pxl is None):
             logging.warning("target_pose is None")
         else:
+            # MAIN SCATTERING CODE
             target_pose = copy.deepcopy(obj_pos)    
             if (self.x_boundary[0] < target_pose[0] < self.x_boundary[1]) and \
                     (self.y_boundary[0] < target_pose[1] < self.y_boundary[1]):
@@ -532,106 +496,107 @@ class Robot:
                 #
                 # self.rob2.movel(rob2_preloc, 0.5, 0.5)
                 # self.rob2.movej(starting_pose, 1.0, 1.0)
-                
+
+                # type LONG은 뭐지?
                 type="LONG"
                 for _ in range(num_scattering):
-                	# Scattering path
-                	angle, w, h = self.angle_detect(target_cls)
-                	temp_seg = np.copy(self.seg_img)
-                	if type == "LONG":
-                		path = non_linear_scatter(temp_seg, target_cls, 90 + angle, h)
-                		if path is "linear":
-                			path = linear_scatter(temp_seg, target_cls, 90 + angle, h)
-                	else:
-                		path = non_linear_scatter(temp_seg, target_cls, angle, w)
-                		if path is "linear":
-                			path = linear_scatter(temp_seg, target_cls, angle, w)
+                    # Scattering path
+                    angle, w, h = self.angle_detect(target_cls)
+                    temp_seg = np.copy(self.seg_img)
+                    if type == "LONG":
+                        path = non_linear_scatter(temp_seg, target_cls, 90 + angle, h)
+                        if path is "linear":
+                            path = linear_scatter(temp_seg, target_cls, 90 + angle, h)
+                    else:
+                        path = non_linear_scatter(temp_seg, target_cls, angle, w)
+                        if path is "linear":
+                            path = linear_scatter(temp_seg, target_cls, angle, w)
 
-                	if path is None:
-                		self.color_path = None
-                		return None
+                    if path is None:
+                        self.color_path = None
+                        return None
 
-                	for idx, _ in enumerate(path):
-                		path[idx][0] = 255 - path[idx][0]
+                    for idx, _ in enumerate(path):
+                        path[idx][0] = 255 - path[idx][0]
 
-                	if path.size == 0:
-                		return None
+                    if path.size == 0:
+                        return None
 
-                	self.color_path = path
-                	# 이미지에 Color Path 만드는 함수 별도 만들기 - 수정 필요
+                    self.color_path = path
+                    # 이미지에 Color Path 만드는 함수 별도 만들기 - 수정 필요
 
-                	# Move points of robot
-                	xyz_list = self.global_cam.path2xyz(path)
-                	xyz_list[0] = clip(xyz_list[0], self.y_boundary, self.x_boundary)
-                	self.rob2.movej(self.initial_pose2, 2, 2)
-                	self.gripper2.close_gripper()
-                	move_list = []
-                	move_pt = np.append(xyz_list[0], [0, -3.14, 0])
-                	move_list.append(move_pt + np.array([0, 0, self.z_lift, 0, 0, 0]))
-                	self.rob2.movels(move_list, 0.7, 0.7, radius=0.01)
-                	move_pt[2] = self.z_tray
-                	move_list.append(move_pt)
+                    # Move points of robot
+                    xyz_list = self.global_cam.path2xyz(path)
+                    xyz_list[0] = clip(xyz_list[0], self.y_boundary, self.x_boundary)
+                    self.rob2.movej(self.initial_pose2, 2, 2)
+                    self.gripper2.close_gripper()
+                    move_list = []
+                    move_pt = np.append(xyz_list[0], [0, -3.14, 0])
+                    move_list.append(move_pt + np.array([0, 0, self.z_lift, 0, 0, 0]))
+                    self.rob2.movels(move_list, 0.7, 0.7, radius=0.01)
+                    move_pt[2] = self.z_tray
+                    move_list.append(move_pt)
 
-                	for pt_xyz in xyz_list[1::2]:
-                		pt_xyz[2] = self.z_tray
-                		pt_xyz = clip(pt_xyz, self.y_boundary, self.x_boundary)
-                		move_pt = np.append(pt_xyz, [0, -3.14, 0])
-                		move_list.append(move_pt)
+                    for pt_xyz in xyz_list[1::2]:
+                        pt_xyz[2] = self.z_tray
+                        pt_xyz = clip(pt_xyz, self.y_boundary, self.x_boundary)
+                        move_pt = np.append(pt_xyz, [0, -3.14, 0])
+                        move_list.append(move_pt)
 
-                	move_pt[2] += 0.15
-                	move_list.append(move_pt)
+                    move_pt[2] += 0.15
+                    move_list.append(move_pt)
 
-                	# Wrist angle control
-                	rotate_j = self.rob2.getj()
-                	if len(move_list) > 7:
-                		angle_init = atan2(move_list[7][1] - move_list[0][1], move_list[7][0] - move_list[0][0]) * (
-                				180 / np.pi)
-                		angle = []
-                		for i in range(len(move_list) - 7)[::3]:
-                			angle.append(
-                				atan2(move_list[i + 7][1] - move_list[i][1], move_list[i + 7][0] - move_list[i][0]))
+                    # Wrist angle control
+                    rotate_j = self.rob2.getj()
+                    if len(move_list) > 7:
+                        angle_init = atan2(move_list[7][1] - move_list[0][1], move_list[7][0] - move_list[0][0]) * (
+                                180 / np.pi)
+                        angle = []
+                        for i in range(len(move_list) - 7)[::3]:
+                            angle.append(
+                                atan2(move_list[i + 7][1] - move_list[i][1], move_list[i + 7][0] - move_list[i][0]))
 
-                		for i in range(len(angle) - 1)[-1::-1]:
-                			if angle[i + 1] * angle[i] < 0:
-                				angle.insert(i + 1, angle[i])
-                				angle.insert(i + 1, angle[i])
-                			else:
-                				tan = (angle[i + 1] - angle[i]) / 3
-                				a1 = angle[i] + tan * 1
-                				a2 = angle[i] + tan * 2
-                				angle.insert(i + 1, a2)
-                				angle.insert(i + 1, a1)
+                        for i in range(len(angle) - 1)[-1::-1]:
+                            if angle[i + 1] * angle[i] < 0:
+                                angle.insert(i + 1, angle[i])
+                                angle.insert(i + 1, angle[i])
+                            else:
+                                tan = (angle[i + 1] - angle[i]) / 3
+                                a1 = angle[i] + tan * 1
+                                a2 = angle[i] + tan * 2
+                                angle.insert(i + 1, a2)
+                                angle.insert(i + 1, a1)
 
-                		for i in range(7):
-                			angle.append(angle[-1])
+                        for i in range(7):
+                            angle.append(angle[-1])
 
-                		rpose = []
-                		if angle_init > 90:
-                			for i in range(len(angle)):
-                				rotation = rotate_j[-1] - (angle[i] - np.pi)
-                				rotate_j_re = np.append(rotate_j[:-1], rotation)
-                				rpose = self.solve_FK(rotate_j_re)
-                				move_list[i][3:] = rpose[3:]
-                		elif angle_init < -90:
-                			for i in range(len(angle)):
-                				rotation = rotate_j[-1] - (angle[i] + np.pi)
-                				rotate_j_re = np.append(rotate_j[:-1], rotation)
-                				rpose = self.solve_FK(rotate_j_re)
-                				move_list[i][3:] = rpose[3:]
-                		else:
-                			for i in range(len(angle)):
-                				rotation = rotate_j[-1] - angle[i]
-                				rotate_j_re = np.append(rotate_j[:-1], rotation)
-                				rpose = self.solve_FK(rotate_j_re)
-                				move_list[i][3:] = rpose[3:]
+                        rpose = []
+                        if angle_init > 90:
+                            for i in range(len(angle)):
+                                rotation = rotate_j[-1] - (angle[i] - np.pi)
+                                rotate_j_re = np.append(rotate_j[:-1], rotation)
+                                rpose = self.solve_FK(rotate_j_re)
+                                move_list[i][3:] = rpose[3:]
+                        elif angle_init < -90:
+                            for i in range(len(angle)):
+                                rotation = rotate_j[-1] - (angle[i] + np.pi)
+                                rotate_j_re = np.append(rotate_j[:-1], rotation)
+                                rpose = self.solve_FK(rotate_j_re)
+                                move_list[i][3:] = rpose[3:]
+                        else:
+                            for i in range(len(angle)):
+                                rotation = rotate_j[-1] - angle[i]
+                                rotate_j_re = np.append(rotate_j[:-1], rotation)
+                                rpose = self.solve_FK(rotate_j_re)
+                                move_list[i][3:] = rpose[3:]
 
-                		for i in range(7):
-                			move_list[-(i + 1)][3:] = rpose[3:]
+                        for i in range(7):
+                            move_list[-(i + 1)][3:] = rpose[3:]
 
-                	self.rob2.movels(move_list, 0.5, 0.5, radius=0.01)
-                	self.rob2.movej(self.initial_pose2, 2, 2)
-                	self.rob2.movej(self.home, 2, 2)
-                	self.gripper2.open_gripper()
+                    self.rob2.movels(move_list, 0.5, 0.5, radius=0.01)
+                    self.rob2.movej(self.initial_pose2, 2, 2)
+                    self.rob2.movej(self.home, 2, 2)
+                    self.gripper2.open_gripper()
 
             else:
                 print("%s is out of Safe Boundary" % RL_Obj_List[self.target_cls][0], file=sys.stderr)
@@ -1097,9 +1062,6 @@ class Robot:
                 # ##### Rob1: 물체 잡고 서랍에 넣기 #####
                 # : 로봇의 현재 위치 기록
                 target_pose[:2] = -target_pose[:2]
-
-                # self.rob1.movej(self.home, 0.7, 0.7)
-                # self.rob1.movej(rob1_starting_pose, 0.7, 0.7)
                 rob1_loc = self.rob1.getl()
                 rob1_loc[0] = rob1_loc[0] - 0.0015
                 rob1_preloc = copy.deepcopy(rob1_loc)
@@ -1137,7 +1099,6 @@ class Robot:
 
                 self.gripper1.close_gripper()
 
-                # rob2_loc[2] = rob2_loc[2] + 0.255
                 self.rob1.movel(rob1_loc, 1.0, 1.0)
 
     def grasp_place_drawer_obj(self, drawer_pos=None):
@@ -1238,7 +1199,6 @@ class Robot:
 
                 self.rob2.movej(starting_pose, 1.0, 1.0)
                 # self.gripper2.open_gripper()
-                aaaaaa = 0
                 # holder_pose = copy.deepcopy(rob2_loc)
 
                 ################################################################################################
@@ -1345,19 +1305,6 @@ class Robot:
 
                 self.rob2.movej(starting_pose, 1.0, 1.0)
 
-                # # : placing holder 로 이어짐
-                # holder_rob2loc = copy.deepcopy(holder_lpose)
-                # holder_rob2loc[0] = -0.3827240318510141
-                # self.rob2.movel(holder_rob2loc, 0.5, 0.5)
-                # holder_rob2loc[1] = -0.11224559562670627
-                # self.rob2.movel(holder_rob2loc, 0.5, 0.5)
-                # holder_rob2loc_after = self.rob2.getl()
-                # holder_rob2loc_after[2] = copy.deepcopy(holder_rob2loc[2]) - 0.20
-                # self.rob2.movel(holder_rob2loc_after, 0.5, 0.5)
-                # self.gripper2.gripper_action(127)
-                #
-                # self.rob2.movel(holder_rob2loc, 0.5, 0.5)
-
                 #################################################################################################
                 return copy.deepcopy(h_loc)
 
@@ -1433,7 +1380,6 @@ class Robot:
 
                 self.rob1.movej(back_pose, 1.0, 1.0)
                 # self.gripper2.open_gripper()
-                aaaaaa = 0
 
             else:
                 print("%s is out of Safe Boundary" % RL_Obj_List[self.target_cls][0], file=sys.stderr)
@@ -1465,34 +1411,7 @@ class Robot:
         starting_pose = np.deg2rad([90.0, -90.0, 110.0, -110.0, -90.0, 0.0])
         self.rob2.movej(starting_pose, 0.5, 0.5)
 
-        #
-        # holder_rob2loc = copy.deepcopy(holder_lpose)
-        # holder_rob2loc[0] = -0.3827240318510141
-        # self.rob2.movel(holder_rob2loc, 0.5, 0.5)
-        # holder_rob2loc[1] = -0.11224559562670627
-        # self.rob2.movel(holder_rob2loc, 0.5, 0.5)
-        # holder_rob2loc_after = self.rob2.getl()
-        # holder_rob2loc_after[2] = copy.deepcopy(holder_rob2loc[2]) - 0.20
-        # self.rob2.movel(holder_rob2loc_after, 0.5, 0.5)
-        # self.gripper2.gripper_action(127)
-        #
-        # self.rob2.movel(holder_rob2loc, 0.5, 0.5)
-        # self.gripper2.open_gripper()
-        #
-        # back_pose = np.deg2rad([0.0, 0.0, -90.0, -90.0, 90.0, 0.0])
-        # # self.rob1.movej(back_pose, 1.0, 1.0)
-        # starting_pose = np.deg2rad([90.0, -90.0, 110.0, -110.0, -90.0, 0.0])
-        # # self.rob2.movej(starting_pose, 1.0, 1.0)
-        # # self.robot_dual_control(rob1_pose=back_pose, rob1_vel=1.0, rob1_acc=1.0,
-        # #                         rob2_pose=starting_pose, rob2_vel=0.75, rob2_acc=0.75)
-        # self.rob2.movej(starting_pose, 0.5, 0.5)
-        #
-        # self.rob1.movej([0.5496063232421875, -2.5950987974749964, -1.0065472761737269,
-        #                  -2.678708855305807, 2.1186039447784424, 0.005185424350202084], 0.5, 0.5)
-        # self.gripper1.open_gripper()
-        #
-        # self.rob1.movej(back_pose, 0.5, 0.5)
-
+        
     def holder_toplace(self, h_loc):
 
         self.rob2.movel(h_loc, 0.5, 0.5)

@@ -21,5 +21,17 @@ Logistics
 2. 
 """
 
-def scatter():
+def get_neighbor_obj():
+    # 어떻게 detect 해야할까?
+    # object의 경계선은 어디에 있지?
+    return [1, 2, 3]
+
+def put_neighbor_obj(obj):
+    # neighboring object 옮기기
+    # 어떻게 옮기지?
     pass
+
+def scatter():
+    neighbor_obj_list = get_neighbor_obj()
+    for neighbor_obj in neighbor_obj_list:
+        put_neighbor_obj(neighbor_obj)

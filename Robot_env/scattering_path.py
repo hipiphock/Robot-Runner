@@ -166,7 +166,7 @@ def non_linear_scatter(seg_img, target_cls, angle, w):
     """
     # Q: dilated_img가 뭐하는 애지? 커진 이미지?
     dilated_img, dilated_img2, neighbored_list, neighbored_list_org = \
-                find_neighboring_obj(seg_img, target_cls, angle, w) # neighboring object를 가져오나보다.
+                find_neighboring_obj(seg_img, target_cls, angle, w)     # neighboring object를 가져오나보다.
     if neighbored_list is None or neighbored_list == []:
         logging.warning("Empty neighbored_list.")
         return None
@@ -200,8 +200,8 @@ def non_linear_scatter(seg_img, target_cls, angle, w):
     label = np.zeros(n_size)        # 1렬 0 행렬 생성
     label[target_pt.shape[0]:] = 1  # target = 0, neighbor = 1
 
-    data = np.concatenate((target_pt, b[1:]))  # 타겟 포인트와 주변물체 포인트를 합침
-    temp = np.array([data[:, 1], data[:, 0]]).transpose()  # 모두 x,y 좌표에 맞게 변환
+    data = np.concatenate((target_pt, b[1:]))               # 타겟 포인트와 주변물체 포인트를 합침
+    temp = np.array([data[:, 1], data[:, 0]]).transpose()   # 모두 x,y 좌표에 맞게 변환
 
     svm = SVC(kernel='rbf', random_state=0, gamma=0.0001, C=1000.000)  # svm 파라미터 설정
     svm.fit(temp, label)  # 해당 픽셀들로 svm을 실행
@@ -372,6 +372,7 @@ def check_image(target, cv_obj, window_name):
     cv2.waitKey(2)
     cv2.imwrite("{}_kernel".format(target) + ".png", img_k)
 
+
 def find_neighboring_obj(seg, target, angle, w):
     """
     Returns neightboring object lists of the target.
@@ -389,15 +390,16 @@ def find_neighboring_obj(seg, target, angle, w):
     [binary_image_array.itemset((y, x), 255) for [y, x] in target_list]
 
     # 얼마나 팽창 연산을 수행할지를 결정하는 파라미터들
-    if target in large_objects:  # Big size objects
-        kernel_size = 9
+    if target in large_objects:     # Big size objects
+        kernel_size = 9             # kernel_size가 의미하는게 뭔가?
         kernel_half = math.trunc(kernel_size / 2)
         kernelorg = np.zeros((kernel_size, kernel_size), np.uint8)
         kernel = cv2.ellipse(kernelorg, 
                             (kernel_half, kernel_half), 
                             (kernel_half + 1, kernel_half - 1), 
                             angle, 0, 360, 1, -1)
-        target_dilation = np.array(cv2.dilate(binary_image_array, kernel, iterations=3))
+        cv2.imshow(kernel, cv2.IMREAD_COLOR)    # for debug
+        target_dilation = np.array(cv2.dilate(binary_image_array, kernel, iterations=3))    # 타원을 더 두껍게 만드는 듯
 
         # >> check
         check_image(target, kernel, "kernel")
@@ -418,6 +420,7 @@ def find_neighboring_obj(seg, target, angle, w):
                              (kernel_half + 1, kernel_half - 1), 
                              angle, 0, 360, 1, -1)
         target_dilation = np.array(cv2.dilate(binary_image_array, kernel, iterations=4))
+        # 작은 object는 타원을 더 두껍게 하려는 듯 하다.
 
         # >> check
         check_image(target, kernel, "kernel")
@@ -431,9 +434,11 @@ def find_neighboring_obj(seg, target, angle, w):
         target_mod = target_dilation
 
     binary_image_array2 = np.zeros(shape=(256, 256), dtype=np.uint8)
+    # 256*256 image array를 초기화한다.
+    # 이를 이용해서 뭘 하려는거지?
 
     # cv2.kmeans(mean_set_list, 1)
-    target_list_mean = np.mean(target_list[:-1], axis=0)
+    target_list_mean = np.mean(target_list[:-1], axis=0)                # target list?
     try:
         p1 = math.trunc(target_list_mean[0])
         p2 = math.trunc(target_list_mean[1])  # [math.trunc(target_list_mean[0]),math.trunc(target_list_mean[1])]
@@ -455,12 +460,12 @@ def find_neighboring_obj(seg, target, angle, w):
 
         check_image(target, kernel_1, "kernel_1")
 
-        kernel_size2 = 11
+        kernel_size2 = 11           # kernel2는 뭐하는 애일까?
         kernel_half2 = math.trunc(kernel_size2 / 2)
         kernelorg2 = np.zeros((kernel_size2, kernel_size2), np.uint8)
         kernel_2 = cv2.ellipse(kernelorg2, 
                                (kernel_half2, kernel_half2), 
-                               (kernel_half2 - 1, kernel_half2 - 1), 
+                               (kernel_half2 - 1, kernel_half2 - 1),    # 타원 모양이 조금 다른거 같은데?
                                angle, 0, 360, 1, -1)
         target_mod2 = np.array(cv2.dilate(target_dilation2, kernel_2, iterations=1))
 
@@ -504,15 +509,15 @@ def find_neighboring_obj(seg, target, angle, w):
         cv2.imwrite("{}_target_mod2".format(target) + ".png", img_td2)
     # ---------------------------------------------------
 
-    no0 = binary_image_array.copy() # 원 물체 세그
-    no1 = target_dilation.copy()    # 팽창 후 물체
-    no2 = target_mod2.copy()        # 검사 할 영역
+    original_seg = binary_image_array.copy()     # 원 물체 세그
+    expanded_obj = target_dilation.copy()        # 팽창 후 물체
+    area_to_check = target_mod2.copy()           # 검사 할 영역
 
     bl_img = np.zeros(shape=(256, 256), dtype=np.uint8)
-    bl_img = bl_img + (no1 / 255) * 128
-    bl_img = bl_img + (no0 / 255) * 127
+    bl_img = bl_img + (expanded_obj / 255) * 128
+    bl_img = bl_img + (original_seg / 255) * 127
 
-    con_img1, contour1, _ = cv2.findContours(no0, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)   # for opencv3
+    con_img1, contour1, _ = cv2.findContours(original_seg, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)   # for opencv3
     # contour1, h = cv2.findContours(no0, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)             # for opencv4
 
     for cnt in contour1:
@@ -520,8 +525,9 @@ def find_neighboring_obj(seg, target, angle, w):
 
         box_cont = np.int0(cv2.boxPoints(rect))
         box_img = cv2.drawContours(bl_img, [box_cont], 0, 32, 1)
+        cv2.imshow("what is this?", box_img)
 
-    no2_list = np.argwhere(no2 == 255)
+    no2_list = np.argwhere(area_to_check == 255)
 
     for [x, y] in no2_list:
         box_img[x, y] = 64
@@ -552,6 +558,7 @@ def find_neighboring_obj(seg, target, angle, w):
         for cls in dilated_cls2:
             seg_cls = np.delete(seg_cls, np.argwhere(seg_cls == cls))  # 세그멘테이션 된 데이터와 다이얼레이션 에서 검출된 데이터를 비교, 같은것을 제거
 
+        # 삭제된 것은 뭘 의미하는거지?
         # -> 원래 아이템이랑, 디텍트 확장시켰을때 아이템이랑 서로 지웠을때 뭐가남는다? = 먹혔다.
         if seg_cls.size != 0:       # 먹힌게 존재하면
             for cls in seg_cls:     # 원래 새그멘테이션 정보 중에서 가까운 물체를 삭제
@@ -596,6 +603,8 @@ def find_neighboring_obj(seg, target, angle, w):
             exist_pt = np.argwhere(delated_seg == obj)
 
             if exist_pt.size != 0:
+                # 존재하는 point의 size가 0이 아니다!
+                # 이게 무슨 뜻이지?
                 return delated_seg, delated_seg2, n_obj_temp, n_obj  # 인덱스 0 = 스케터링 X ,
 
         return None, None, None, None
@@ -611,7 +620,8 @@ def linear_scatter(seg_img, target_cls, angle, w):
     @angle
     @w
     """
-    delated_seg, delated_seg2, neighbored_list, neighbored_list_org = find_neighboring_obj(seg_img, target_cls, angle, w)
+    delated_seg, delated_seg2, neighbored_list, neighbored_list_org = \
+            find_neighboring_obj(seg_img, target_cls, angle, w)
 
     if neighbored_list is None or neighbored_list == []:
         return
