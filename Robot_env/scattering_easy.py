@@ -52,6 +52,13 @@ def midpoint(ptA, ptB):
 
 
 def get_distance(obj_1, obj_2):
+    """
+    Get the distance between object1 and object2.
+    TODO:
+    1. Split the function to object detector and distance computer.
+    2. Specify the real distance between two objects.
+    3. REMOVE INCHES.
+    """
     # load the image, convert it to grayscale, and blur it slightly
     image = cv2.imread("C:/Users/incorl_robot/Desktop/2020PartTimeJob/Robot-Runner/Robot_env/test_image.png")    # In this case, it should be image from
                                             # Intel realsense camera.
@@ -63,8 +70,7 @@ def get_distance(obj_1, obj_2):
     edged = cv2.dilate(edged, None, iterations=1)
     edged = cv2.erode(edged, None, iterations=1)
     # find contours in the edge map
-    cnts = cv2.findContours(edged.copy(), cv2.RETR_EXTERNAL,
-        cv2.CHAIN_APPROX_SIMPLE)
+    cnts = cv2.findContours(edged.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     cnts = imutils.grab_contours(cnts)
     # sort the contours from left-to-right and, then initialize the
     # distance colors and reference object
@@ -105,7 +111,7 @@ def get_distance(obj_1, obj_2):
             # compute the Euclidean distance between the midpoints,
             # then construct the reference object
             D = dist.euclidean((tlblX, tlblY), (trbrX, trbrY))
-            refObj = (box, (cX, cY), D / 600)
+            refObj = (box, (cX, cY), D / 600)   # 600 is the width of test_image.png
             continue
 
         # draw the contours on the image
@@ -117,6 +123,7 @@ def get_distance(obj_1, obj_2):
         refCoords = np.vstack([refObj[0], refObj[1]])
         objCoords = np.vstack([box, (cX, cY)])
 
+        # TODO: getting the nearest distance between two objects
         # loop over the original points
         for ((xA, yA), (xB, yB), color) in zip(refCoords, objCoords, colors):
             # draw circles corresponding to the current points and
