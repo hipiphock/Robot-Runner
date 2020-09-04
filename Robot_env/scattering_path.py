@@ -403,9 +403,8 @@ def find_neighboring_obj(seg, target, angle, w):
                         (kernel_half + 1, kernel_half - 1),
                         angle, 0, 360, 1, -1)
     cv2.imshow(kernel, cv2.IMREAD_COLOR)    # for debug
-    target_dilation = np.array(cv2.dilate(binary_image_array, kernel, iteration_num))    # 타원을 더 두껍게 만드는 듯
+    target_dilation = np.array(cv2.dilate(binary_image_array, kernel, iterations=iteration_num))    # 타원을 더 두껍게 만드는 듯
 
-    # >> check
     check_image(target, kernel, "kernel")
 
     cv2.namedWindow("target_dilation")
@@ -418,11 +417,10 @@ def find_neighboring_obj(seg, target, angle, w):
 
     binary_image_array2 = np.zeros(shape=(256, 256), dtype=np.uint8)
 
-    # cv2.kmeans(mean_set_list, 1)
     target_list_mean = np.mean(target_list[:-1], axis=0)                # target list?
     try:
         p1 = math.trunc(target_list_mean[0])
-        p2 = math.trunc(target_list_mean[1])  # [math.trunc(target_list_mean[0]),math.trunc(target_list_mean[1])]
+        p2 = math.trunc(target_list_mean[1])
         binary_image_array2[p1, p2] = 255
     except:
         pass
@@ -432,7 +430,7 @@ def find_neighboring_obj(seg, target, angle, w):
     if target in large_objects:  # Big size objects
         kernel_size = 11
         iteration_num = 4
-    else
+    else:
         kernel_size = 9
         iteration_num = 3
     kernel_half = math.trunc(kernel_size / 2)
@@ -442,7 +440,7 @@ def find_neighboring_obj(seg, target, angle, w):
                            (kernel_half, kernel_half),
                            (kernel_half, 0),
                            angle, 0, 360, 1, 1)
-    target_dilation2 = np.array(cv2.dilate(binary_image_array2, kernel_1, iteration_num))
+    target_dilation2 = np.array(cv2.dilate(binary_image_array2, kernel_1, iterations=iteration_num))
     check_image(target, kernel_1, "kernel_1")
 
     kernelorg2 = np.zeros((kernel_size, kernel_size), np.uint8)
@@ -461,15 +459,16 @@ def find_neighboring_obj(seg, target, angle, w):
     cv2.imwrite("{}_target_mod2".format(target) + ".png", img_td2)
 
     # ---------------------------------------------------
-
-    original_seg = binary_image_array.copy()     # 원 물체 세그
-    expanded_obj = target_dilation.copy()        # 팽창 후 물체
+    # 여기서부터 이해해보자!
+    original_seg = binary_image_array.copy()     # original object's segment
+    expanded_obj = target_dilation.copy()        # object after dilation
     area_to_check = target_mod2.copy()           # 검사 할 영역
 
     bl_img = np.zeros(shape=(256, 256), dtype=np.uint8)
     bl_img = bl_img + (expanded_obj / 255) * 128
     bl_img = bl_img + (original_seg / 255) * 127
 
+    # the current venv is using opencv3
     con_img1, contour1, _ = cv2.findContours(original_seg, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)   # for opencv3
     # contour1, h = cv2.findContours(no0, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)             # for opencv4
 
@@ -527,7 +526,7 @@ def find_neighboring_obj(seg, target, angle, w):
     dilated_target_pointList = np.argwhere(target_mod == 255)  # 팽창된 이미지 중에서 255값에 해당하는 포인트만 추출
 
     #  = (원코드)
-    #  = 근접 물체 파악 및 경로 생성시 어떤 포인트 들을 쓸건지 저장
+    #  = 근접 물체 파악 및 경로 생성시 어떤 포인트들을 쓸건지 저장
     close_obj_index_list = []
     for [y, x] in dilated_target_pointList:
         label = seg[y, x]                       # 세그맨테이션 된 이미지에서 추출된 포인트에 해당하는것을 라벨로 지정
@@ -537,7 +536,8 @@ def find_neighboring_obj(seg, target, angle, w):
             delated_seg[y, x] = target          # 타겟에 해당하는 것들의 좌표를 저장
 
     if close_obj_index_list.__len__() != 0:     # 가까운 오브젝트 인덱스 리스트.길이가 0이 아닐경우
-        dilated_cls = np.unique(delated_seg)    # dilation 후 저장된 포인트 들 중 중복 제거
+        dilated_cls = np.unique(delated_seg)    # dilation 후 저장된 포인트들 중 중복 제거
+                                                # == point들을 무분별하게 저장하고 있음
         seg_cls = np.unique(seg)                # 세그멘테이션 원 데이터 포인트 들 중 중복 제거
 
         n_obj = np.unique(close_obj_index_list) # 근처 오브젝트 중 중복 제거
@@ -556,6 +556,7 @@ def find_neighboring_obj(seg, target, angle, w):
             if exist_pt.size != 0:
                 # 존재하는 point의 size가 0이 아니다!
                 # 이게 무슨 뜻이지?
+                # logging.info("close neighbors:{}".format(n_obj))
                 return delated_seg, delated_seg2, n_obj_temp, n_obj  # 인덱스 0 = 스케터링 X ,
 
         return None, None, None, None
@@ -591,7 +592,7 @@ def linear_scatter(seg_img, target_cls, angle, w):
     # label : 0 = neigbho
     label = np.zeros(int(n_size + pt_max))  # 타겟 크기반으로 쪼갠 것에 1/2크기를 추가하여 저장
     label[n_size:] = 1                      # 그 중 반타겟크기 이후를 1로 저장 = 주변물체 1, 타겟 = 0
-    # 다이얼레이션 진행한 세그맨테이션에서 주변집중물체를 찾음, 그리고 타겟 오브젝트의 세그이미지에 합함
+    # dilation을 진행한 세그맨테이션에서 주변집중물체를 찾음, 그리고 타겟 오브젝트의 세그이미지에 합함
     data = np.concatenate((target_pt, np.argwhere(np.array(delated_seg) == neighbor_obj)))
 
     temp = np.array([data[:, 1], data[:, 0]]).transpose()  # 좌표로 변환

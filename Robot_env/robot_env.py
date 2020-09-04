@@ -476,27 +476,6 @@ class Robot:
                 self.robot_dual_control(rob1_pose=back_pose, rob1_vel=1.0, rob1_acc=1.0,
                                         rob2_pose=starting_pose, rob2_vel=0.75, rob2_acc=0.75)
 
-                # rob2_loc = self.rob2.getl()
-                #
-                # rob2_preloc = copy.deepcopy(rob2_loc)
-                # rob2_preloc[0] = target_pose[0]
-                # self.rob2.movel(rob2_preloc, 0.5, 0.5)
-                #
-                # rob2_loc[:2] = target_pose[:2]
-                # rob2_loc[2] = rob2_loc[2]
-                # self.rob2.movel(rob2_loc, 0.5, 0.5)
-                #
-                # rob2_loc[2] = rob2_loc[2] - 0.25
-                # self.rob2.movel(rob2_loc, 0.5, 0.5)
-                #
-                # time.sleep(1.0)
-                #
-                # rob2_loc[2] = rob2_loc[2] + 0.25
-                # self.rob2.movel(rob2_loc, 0.5, 0.5)
-                #
-                # self.rob2.movel(rob2_preloc, 0.5, 0.5)
-                # self.rob2.movej(starting_pose, 1.0, 1.0)
-
                 # type LONG은 뭐지?
                 type="LONG"
                 for _ in range(num_scattering):
@@ -596,7 +575,7 @@ class Robot:
                     self.rob2.movels(move_list, 0.5, 0.5, radius=0.01)
                     self.rob2.movej(self.initial_pose2, 2, 2)
                     self.rob2.movej(self.home, 2, 2)
-                    self.gripper2.open_gripper()
+                    self.gripper2.open_gripper()    # 아니 open gripper 하고서 끝?
 
             else:
                 print("%s is out of Safe Boundary" % RL_Obj_List[self.target_cls][0], file=sys.stderr)
@@ -704,7 +683,6 @@ class Robot:
 
 
     # ---- ---- ---- ---- Picking ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-    # = 20191100
     def grasp_placing_box(self, target_cls, target_imgmean, obj_pos=None, ):
 
         if obj_pos is None:
@@ -716,7 +694,7 @@ class Robot:
 
             if (self.x_boundary[0] < target_pose[0] < self.x_boundary[1]) and (
                     self.y_boundary[0] < target_pose[1] < self.y_boundary[1]):
-
+                # currently not supporting scattering
                 # scattering
                 # type_ = "LONG"
                 # num_scattering = 5
