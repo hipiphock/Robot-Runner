@@ -50,13 +50,76 @@ def scatter():
 def midpoint(ptA, ptB):
 	return ((ptA[0] + ptB[0]) * 0.5, (ptA[1] + ptB[1]) * 0.5)
 
+def detect_objects():
+    """
+    Detect objects from the picture.
+    """
+    # load the image, convert it to grayscale, and blur it slightly
+    image = cv2.imread("C:/Users/incorl_robot/Desktop/2020PartTimeJob/Robot-Runner/Robot_env/test_image.png")
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    gray = cv2.GaussianBlur(gray, (7, 7), 0)
+    # perform edge detection, then perform a dilation + erosion to
+    # close gaps in between object edges
+    edged = cv2.Canny(gray, 50, 100)
+    edged = cv2.dilate(edged, None, iterations=1)
+    edged = cv2.erode(edged, None, iterations=1)
+    # find contours in the edge map
+    cnts = cv2.findContours(edged.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    cnts = imutils.grab_contours(cnts)
+    # sort the contours from left-to-right and, then initialize the
+    # distance colors and reference object
+    (cnts, _) = contours.sort_contours(cnts)
+    return cnts
 
-def get_distance(obj_1, obj_2):
+def get_covering_circle(contours):
+    for cnt in contours:
+        # if the contour is not sufficiently large, ignore it
+        if cv2.contourArea(c) < 100:    # This should be changed with relate to
+            continue                    # robot environment.
+        # compute the rotated bounding box of the contour
+        box = cv2.minAreaRect(c)        # rectangle 말고 circle로 하면?
+        box = cv2.cv.BoxPoints(box) if imutils.is_cv2() else cv2.boxPoints(box)
+        box = np.array(box, dtype="int")
+        # order the points in the contour such that they appear
+        # in top-left, top-right, bottom-right, and bottom-left
+        # order, then draw the outline of the rotated bounding
+        # box
+        box = perspective.order_points(box)
+        # compute the center of the bounding box
+        cX = np.average(box[:, 0])
+        cY = np.average(box[:, 1])
+
+
+def get_distance(object1, object2):
+    # TODO: getting the nearest distance between two objects
+    # loop over the original points
+    for ((xA, yA), (xB, yB), color) in zip(object1, object2, colors):
+        # draw circles corresponding to the current points and
+        # connect them with a line
+        cv2.circle(orig, (int(xA), int(yA)), 5, color, -1)
+        cv2.circle(orig, (int(xB), int(yB)), 5, color, -1)
+        cv2.line(orig, (int(xA), int(yA)), (int(xB), int(yB)),
+            color, 2)
+        # compute the Euclidean distance between the coordinates,
+        # and then convert the distance in pixels to distance in
+        # units
+        D = dist.euclidean((xA, yA), (xB, yB)) / refObj[2]
+        (mX, mY) = midpoint((xA, yA), (xB, yB))
+        cv2.putText(orig, "{:.1f}in".format(D), (int(mX), int(mY - 10)),
+            cv2.FONT_HERSHEY_SIMPLEX, 0.55, color, 2)
+        # show the output image
+        cv2.imshow("Image", orig)
+        cv2.waitKey(0)
+
+
+def main():
     """
     Get the distance between object1 and object2.
     TODO:
     1. Split the function to object detector and distance computer.
     2. Specify the real distance between two objects.
+     - Idea: get the distance between the rightmost point of left object 
+             and leftmost point of right object
     3. REMOVE INCHES.
     """
     # load the image, convert it to grayscale, and blur it slightly
@@ -85,7 +148,7 @@ def get_distance(obj_1, obj_2):
         if cv2.contourArea(c) < 100:    # This should be changed with relate to
             continue                    # robot environment.
         # compute the rotated bounding box of the contour
-        box = cv2.minAreaRect(c)
+        box = cv2.minAreaRect(c)        # rectangle 말고 circle로 하면?
         box = cv2.cv.BoxPoints(box) if imutils.is_cv2() else cv2.boxPoints(box)
         box = np.array(box, dtype="int")
         # order the points in the contour such that they appear
@@ -144,4 +207,4 @@ def get_distance(obj_1, obj_2):
             cv2.waitKey(0)
 
 if __name__ == "__main__":
-    get_distance(1, 2)
+    main()
