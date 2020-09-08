@@ -56,6 +56,45 @@ def scatter():
 def midpoint(ptA, ptB):
     return ((ptA[0] + ptB[0]) * 0.5, (ptA[1] + ptB[1]) * 0.5)
 
+def detect_objects():
+    """
+    Detect objects from the picture.
+    """
+    # load the image, convert it to grayscale, and blur it slightly
+    image = cv2.imread("C:/Users/incorl_robot/Desktop/2020PartTimeJob/Robot-Runner/Robot_env/test_image.png")
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    gray = cv2.GaussianBlur(gray, (7, 7), 0)
+    # perform edge detection, then perform a dilation + erosion to
+    # close gaps in between object edges
+    edged = cv2.Canny(gray, 50, 100)
+    edged = cv2.dilate(edged, None, iterations=1)
+    edged = cv2.erode(edged, None, iterations=1)
+    # find contours in the edge map
+    cnts = cv2.findContours(edged.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    cnts = imutils.grab_contours(cnts)
+    # sort the contours from left-to-right and, then initialize the
+    # distance colors and reference object
+    (cnts, _) = contours.sort_contours(cnts)
+    return cnts
+
+def get_covering_circle(contours):
+    for cnt in contours:
+        # if the contour is not sufficiently large, ignore it
+        if cv2.contourArea(c) < 100:    # This should be changed with relate to
+            continue                    # robot environment.
+        # compute the rotated bounding box of the contour
+        box = cv2.minAreaRect(c)        # rectangle 말고 circle로 하면?
+        box = cv2.cv.BoxPoints(box) if imutils.is_cv2() else cv2.boxPoints(box)
+        box = np.array(box, dtype="int")
+        # order the points in the contour such that they appear
+        # in top-left, top-right, bottom-right, and bottom-left
+        # order, then draw the outline of the rotated bounding
+        # box
+        box = perspective.order_points(box)
+        # compute the center of the bounding box
+        cX = np.average(box[:, 0])
+        cY = np.average(box[:, 1])
+
 
 def get_distance(image, robot, detected_obj_lists):
     """
@@ -171,8 +210,3 @@ def get_distance(image, robot, detected_obj_lists):
         i += 1
 
     return distance_array
-
-
-if __name__ == "__main__":
-    image = None
-    get_distance(image)
