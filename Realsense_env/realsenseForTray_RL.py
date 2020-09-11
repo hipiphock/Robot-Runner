@@ -5,11 +5,16 @@ import cv2
 import sys
 import time
 import ctypes
+import logging
 
+logger = logging.getLogger("realsense")
+# handler = logging.StreamHandler(sys.stderr)
+# handler.setLevel(logging.INFO)
+# logger.addHandler(handler)
 
 class Realsense:
     def __init__(self):
-        print("-->> initializing Realsense", file=sys.stderr)
+        logger.info("initializing Realsense")
         while True:
             try:
                 self.file_num = 0
@@ -23,19 +28,14 @@ class Realsense:
                 self.depth_intrin = None
                 self.color_intrin = None
                 self.depth_to_color_extrin = None
-
                 self.initialize()
-
                 self.raw_color = None
-
                 break
             except:
-                print("..>> retrying Realsense connect", file=sys.stderr)
-
-        print("-->> Realsense Ready", file=sys.stderr)
+                logger.error("retrying Realsense connect")
+        logger.info("Realsense Ready")
 
     def initialize(self):
-
         self.pipeline = rs.pipeline()
         self.config = rs.config()
         self.config.enable_stream(rs.stream.depth, 1280, 720, rs.format.z16, 30)

@@ -27,9 +27,9 @@ import math3d as m3d
 import logging
 
 logger = logging.getLogger("robot_util")
-handler = logging.StreamHandler(sys.stderr)
-handler.setLevel(logging.INFO)
-logger.addHandler(handler)
+# handler = logging.StreamHandler(sys.stderr)
+# handler.setLevel(logging.INFO)
+# logger.addHandler(handler)
 
 class Robot_util:
     def __init__(self, socket_ip):

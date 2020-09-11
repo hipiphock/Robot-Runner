@@ -35,9 +35,9 @@ import copy
 import logging
 
 logger = logging.getLogger("Robot")
-handler = logging.StreamHandler(sys.stderr)
-handler.setLevel(logging.WARNING)
-logger.addHandler(handler)
+# handler = logging.StreamHandler(sys.stderr)
+# handler.setLevel(logging.WARNING)
+# logger.addHandler(handler)
 
 
 class Robot:

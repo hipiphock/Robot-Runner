@@ -103,13 +103,14 @@ class Agent:
     def run_bin_test(self):
         logger.info("STARTING BIN TEST")
         bin_list = self.set_obj(self.bin_list)
+        hasFind = True
         for bin_cls in bin_list:
             if hasFind is True:
                 self.robot.env_img_update()
             bin_xyz, bin_imgmean, bin_pxl = self.robot.get_obj_pos(bin_cls)
             if bin_xyz is None:
                 hasFind = False
-                logger.warning("Can not find {}, xyz is None.".format(RL_Obj_List[target_cls][0]))
+                logger.warning("Can not find {}, xyz is None.".format(RL_Obj_List[bin_cls][0]))
                 continue
             hasFind = True
             obj_list = self.set_obj(self.bin_obj_list)
@@ -130,6 +131,7 @@ class Agent:
         holder_list = self.set_obj(self.holder_list)
         #holder_list = [9]   # : test용, 홀더와 빈, 서랍 Mask-RCNN에 포함시켜야함
         h_loc = None
+        hasFind = True
         for target_cls in holder_list:
             if hasFind is True:
                 self.robot.env_img_update()
@@ -161,6 +163,7 @@ class Agent:
     def run_keyboard_test():
         logger.info("STARTING KEYBOARD TEST")
         key_list = self.set_obj(self.keyboard_list)
+        hasFind = True
         for target_cls in key_list:
             if hasFind is True:
                 self.robot.env_img_update()

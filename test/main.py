@@ -18,7 +18,8 @@ parser.add_argument('--seg_threshold', type=float, default=0.80, help="segmentat
 args = parser.parse_args()
 
 if __name__ == "__main__":
-    logging.basicConfig(filename='logs/RobotTest.log', level=logging.INFO)
+    # logging.basicConfig(filename='logs/RobotTest.log', level=logging.INFO)
+    logging.basicConfig(level=logging.INFO)
 
     segmentation_model = Seg_detector.Segment()
 
