@@ -237,7 +237,7 @@ class Robot:
                 pxl_list = np.argwhere(self.seg_img == target_cls)
                 mean_xy = np.copy(np.mean(pxl_list, 0))
         except np.linalg.LinAlgError:
-            logger.warning("np.linalg.LinAlgError")
+            logger.error("np.linalg.LinAlgError")
             return None, None, None
 
         xyz = None

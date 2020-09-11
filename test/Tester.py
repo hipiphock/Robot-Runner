@@ -18,19 +18,18 @@ logger = logging.getLogger("Agent")
 class Agent:
     def __init__(self, rob):
         self.robot = rob
-        self.obj_list = [i for i in range(9, 13)]   # 9~26번, 13, 14 제거 (커넥터)
+        self.obj_list = [i for i in range(9, 13)]       # 9~26번, 13, 14 제거 (커넥터)
         self.obj_list += [i for i in range(21, 27)]
-        self.drawer_list = [1, 2]       # : drawer
+        self.drawer_list = [1, 2]                       # drawer
         self.drawer_obj_list = [17, 18, 19, 20]
-        self.bin_list = [3, 4]          # : bin
-        self.keyboard_list= [7, 8]      # : 7:black     8:pink
+        self.bin_list = [3, 4]                          # bin
         self.bin_obj_list = [15, 16]
         self.bottle_lid_list = [38, 39]
-        self.pen_lid_list = [31, 32, 33]
-        self.holder_list = [5, 6]      # : 5:green     6:black
-        self.pen_list = [27, 28]    # : 27:namepen  28:marker
-        self.wide_object_list = [7, 8, 34, 35, 36, 40]      # : 7:black     8:pink
-        self.usb_list = [29, 30]    # : 29:C-type   30:HDMI
+        self.pen_lid_list = [31, 32, 33]    
+        self.holder_list = [5, 6]                       # 5:green     6:black
+        self.pen_list = [27, 28]                        # 27:namepen  28:marker
+        self.wide_object_list = [7, 8, 34, 35, 36, 40]  # 7:black     8:pink
+        self.usb_list = [29, 30]                        # 29:C-type   30:HDMI
         self.cleaner_list = [37, 41]
 
         self.shuffled_list = []
