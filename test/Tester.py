@@ -51,52 +51,38 @@ class Agent:
         # self.shuffled_list = [20, 21, 22] # : 테스트용 잘되는 물체들 Usb_Big, Tape_black, Tape_white
         return shuffled_list
 
-    def run(self):
-        rob = self.robot
-        episode_num = 1
-        rob.rob1.getl()
-        # rob.rob1.movel([0.5129180147348896, -0.15589696029984967, -0.11966152182033941+0.10, 2.110665698267417, -2.2796431536929087, 0.010529626934130714], 1.0, 1.0)
-        # rob.rob1.movel([0.5129180147348896, -0.15589696029984967, -0.11966152182033941, 2.110665698267417, -2.2796431536929087, 0.010529626934130714], 1.0, 1.0)
-        rob.reset()
-        # ---- ---- ---- ---- Picking ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+    def run_object_picking_test(self):
         logging.info("STARTING PICKING TEST")
         hasFind = True
         obj_list = self.set_obj(self.obj_list)
         for target_cls in obj_list:
-            if hasFind is True:
-                rob.env_img_update()
-
-            target_xyz, target_imgmean, target_pxl = rob.get_obj_pos(target_cls)
-            if target_xyz is None:
-                hasFind = False
-                logging.warning("Can not find {}, xyz is None.".format(RL_Obj_List[target_cls][0]))
-                continue
-
-            hasFind = True
-            logging.info("Current Target: {}".format(RL_Obj_List[target_cls][0]))
-
-            # rob.scatter(target_cls, args.use_scatter, target_xyz, args.num_scattering,target_pxl)
-
-            # if target_cls in [15, 16]:  # :
-            #     rob.scatter(target_cls, args.use_scatter,_, args.num_scattering)
-            #     rob.grasp_placing_bin(target_cls)
-            # elif target_cls in range(17, 21):
-            #     rob.scatter(target_cls, args.use_scatter, args.num_scattering)
-            #     rob.grasp_placing_drawer(target_cls)
-            # else:
-            #     rob.scatter(target_cls, args.use_scatter, target_xyz, args.num_scattering, target_pxl)
-            #     rob.grasp_placing_box(target_cls, target_xyz, target_pxl)
-            #     rob.grasp_placing_box(target_cls, target_imgmean, target_xyz)
-
-            rob.grasp_placing_box(target_cls, target_imgmean, target_xyz)
-
-        #  ---- ---- ---- ---- drawer ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+            while 1:
+                self.robot.env_img_update()
+                target_xyz, target_imgmean, target_pxl = self.robot.get_obj_pos(target_cls)
+                if target_xyz is None:
+                    logging.warning("Can not find {}, xyz is None.".format(RL_Obj_List[target_cls][0]))
+                    break
+                logging.info("Current Target: {}".format(RL_Obj_List[target_cls][0]))
+                distance_array = get_distance(self.robot.color_seg_img, self.robot.detected_obj_list)
+                check = False
+                for i in self.robot.detected_obj_list:
+                    if distance_array[target_cls][i] < 10:
+                        logging.info("Scattering Target: {}, {}".format(RL_Obj_List[target_cls][0], RL_Obj_List[i][0]))
+                        target2_xyz, _, _ = self.robot.get_obj_pos(i)
+                        self.robot.scatter_move_gripper(target_xyz, target2_xyz)
+                        check = True
+                        break
+                if check is False:
+                    break
+            self.robot.grasp_placing_box(target_cls, target_imgmean, target_xyz)
+    
+    def run_drawer_test(self):
         logging.info("STARTING DRAWER TEST")
         drawer_xyz = None
         drawer_list = self.set_obj(self.drawer_list)
         for target_cls in drawer_list:
             if hasFind is True:
-                rob.env_img_update()
+                self.robot.env_img_update()
             target_xyz, target_imgmean, target_pxl = self.robot.get_obj_pos(target_cls)
             if target_xyz is None:
                 hasFind = False
@@ -107,13 +93,12 @@ class Agent:
             logging.info("Current Target: {}".format(RL_Obj_List[target_cls][0]))
             drawer_xyz = target_xyz
             break
-
         if drawer_xyz is not None:
             obj_list = self.set_obj(self.drawer_obj_list)
             for target_cls in obj_list:
                 if hasFind is True:
-                   rob.env_img_update()
-                target_xyz, target_imgmean, target_pxl = rob.get_obj_pos(target_cls)
+                   self.robot.env_img_update()
+                target_xyz, target_imgmean, target_pxl = self.robot.get_obj_pos(target_cls)
                 if target_xyz is None:
                     hasFind = False
                     logging.warning("Can not find {}, xyz is None.".format(RL_Obj_List[target_cls][0]))
@@ -121,109 +106,82 @@ class Agent:
 
                 hasFind = True
                 logging.info("Current Target: {}".format(RL_Obj_List[target_cls][0]))
-                rob.grasp_placing_drawer(target_cls, target_imgmean, target_xyz)
-                rob.open_drawer(drawer_xyz)
-                rob.grasp_place_drawer_obj(drawer_xyz)
-                rob.close_drawer(drawer_xyz)
+                self.robot.grasp_placing_drawer(target_cls, target_imgmean, target_xyz)
+                self.robot.open_drawer(drawer_xyz)
+                self.robot.grasp_place_drawer_obj(drawer_xyz)
+                self.robot.close_drawer(drawer_xyz)
 
-        # ---- ---- ---- ---- bin ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+    def run_bin_test(self):
         logging.info("STARTING BIN TEST")
         bin_list = self.set_obj(self.bin_list)
         for bin_cls in bin_list:
             if hasFind is True:
-                rob.env_img_update()
+                self.robot.env_img_update()
             bin_xyz, bin_imgmean, bin_pxl = self.robot.get_obj_pos(bin_cls)
             if bin_xyz is None:
                 hasFind = False
                 logging.warning("Can not find {}, xyz is None.".format(RL_Obj_List[target_cls][0]))
                 continue
-
             hasFind = True
             obj_list = self.set_obj(self.bin_obj_list)
             for target_cls in obj_list:
                 if hasFind is True:
-                    rob.env_img_update()
-
+                    self.robot.env_img_update()
                 target_xyz, target_imgmean, target_pxl = rob.get_obj_pos(target_cls)
                 if target_xyz is None:
                     hasFind = False
                     logging.warning("Can not find {}, xyz is None.".format(RL_Obj_List[target_cls][0]))
                     continue
-
                 hasFind = True
                 logging.info("Current Target: {}".format(RL_Obj_List[target_cls][0]))
-                rob.grasp_placing_bin(target_cls, target_imgmean, target_xyz, bin_xyz)
+                self.robot.grasp_placing_bin(target_cls, target_imgmean, target_xyz, bin_xyz)
 
-
-        # ---- ---- ---- ---- Pen ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+    def run_penholder_test(self):
         logging.info("STARTING PENHOLDER TEST")
         holder_list = self.set_obj(self.holder_list)
         #holder_list = [9]   # : test용, 홀더와 빈, 서랍 Mask-RCNN에 포함시켜야함
         h_loc = None
         for target_cls in holder_list:
             if hasFind is True:
-                rob.env_img_update()
-
-            target_xyz, target_imgmean, target_pxl = rob.get_obj_pos(target_cls)
+                self.robot.env_img_update()
+            target_xyz, target_imgmean, target_pxl = self.robot.get_obj_pos(target_cls)
             if target_xyz is None:
                 hasFind = False
                 logging.warning("Can not find {}, xyz is None.".format(RL_Obj_List[target_cls][0]))
                 continue
-
             hasFind = True
             logging.info("Current Target: {}".format(RL_Obj_List[target_cls][0]))
-            h_loc = rob.grasp_holder(target_cls, target_xyz)
+            h_loc = self.robot.grasp_holder(target_cls, target_xyz)
             break
-
         if h_loc is not None:
             pen_list = self.set_obj(self.pen_list)
             for target_cls in pen_list:
                 if hasFind is True:
-                   rob.env_img_update()
-
-                target_xyz, _, target_pxl = rob.get_obj_pos(target_cls)
+                   self.robot.env_img_update()
+                target_xyz, _, target_pxl = self.robot.get_obj_pos(target_cls)
                 if target_xyz is None:
                     hasFind = False
                     logging.warning("Can not find {}, xyz is None.".format(RL_Obj_List[target_cls][0]))
                     continue
-
                 hasFind = True
                 logging.info("Current Target: {}".format(RL_Obj_List[target_cls][0]))
-                rob.grasp_pen(target_cls, target_xyz)
+                self.robot.grasp_pen(target_cls, target_xyz)
+                self.robot.placing_toholder(h_loc)
+            self.robot.holder_toplace(h_loc)
 
-                # : 이미지 찍을지 말지 결정 필요
-                # : 안찍을시 하드코딩
-                rob.placing_toholder(h_loc)
-
-            rob.holder_toplace(h_loc)
-
+    def run_keyboard_test():
         # ---- ---- ---- ---- Keyboard ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
         logging.info("STARTING KEYBOARD TEST")
         key_list = self.set_obj(self.keyboard_list)
         for target_cls in key_list:
             if hasFind is True:
-                rob.env_img_update()
+                self.robot.env_img_update()
 
-            target_xyz, mean_xy, target_pxl = rob.get_obj_pos(target_cls)
+            target_xyz, mean_xy, target_pxl = self.robot.get_obj_pos(target_cls)
             if target_xyz is None:
                 hasFind = False
                 logging.warning("Can not find {}, xyz is None.".format(RL_Obj_List[target_cls][0]))
                 continue
 
             hasFind = True
-            rob.grasp_placing_keyboard(target_cls, mean_xy)
-
-        # ---- ---- ---- ---- Connector ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-
-        # ---- ---- ---- ---- End ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
-
-            # episode_num += 1
-
-
-if __name__ == "__main__":
-    logging.basicConfig(stream=sys.stdout, level=logging.INFO)
-    segmentation_model = Seg_detector.Segment()
-    robot = robot_env.Robot(socket_ip1, socket_ip2, segmentation_model, args.seg_threshold)
-
-    agent = Agent(robot)
-    agent.run()
+            self.robot.grasp_placing_keyboard(target_cls, mean_xy)

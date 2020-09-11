@@ -57,8 +57,6 @@ class Agent:
         rob = self.robot
         episode_num = 1
         rob.rob1.getl()
-        # rob.rob1.movel([0.5129180147348896, -0.15589696029984967, -0.11966152182033941+0.10, 2.110665698267417, -2.2796431536929087, 0.010529626934130714], 1.0, 1.0)
-        # rob.rob1.movel([0.5129180147348896, -0.15589696029984967, -0.11966152182033941, 2.110665698267417, -2.2796431536929087, 0.010529626934130714], 1.0, 1.0)
         rob.reset()
         # ---- ---- ---- ---- Picking ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
         logging.info("STARTING PICKING TEST")
@@ -214,8 +212,6 @@ class Agent:
                 logging.info("Current Target: {}".format(RL_Obj_List[target_cls][0]))
                 rob.grasp_pen(target_cls, target_xyz)
 
-                # : 이미지 찍을지 말지 결정 필요
-                # : 안찍을시 하드코딩
                 rob.placing_toholder(h_loc)
 
             rob.holder_toplace(h_loc)

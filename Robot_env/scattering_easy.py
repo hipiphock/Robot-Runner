@@ -180,9 +180,6 @@ def get_distance(image, detected_obj_lists):
             # SETTING INDEX
             # If obj1's center's color is same as detected_obj_lists
             obj1_idx, obj2_idx = 0, 0
-            # print(detected_obj_lists)
-            # detected_obj_lists = list(set(detected_obj_lists) - set([i for i in range(8)]))
-            # print(detected_obj_lists)
             obj_to_be_ignored = list([i for i in range(8)])
             ignore = False
             for obj_num in detected_obj_lists:

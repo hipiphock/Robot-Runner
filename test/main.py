@@ -9,6 +9,12 @@ if __name__ == "__main__":
     agent = Agent(robot)
     
     agent.run_object_picking_test()
+
+    agent.run_drawer_test()
+
+    agent.run_bin_test()
+
+    agent.run_pen_lid_test()
     
     agent.run_penholder_test()
 
