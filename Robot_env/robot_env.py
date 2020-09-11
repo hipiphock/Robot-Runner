@@ -34,7 +34,7 @@ import numpy as np
 import copy
 import logging
 
-logger = logging.getLogger("Robot")
+logger = logging.getLogger("robot_env")
 # handler = logging.StreamHandler(sys.stderr)
 # handler.setLevel(logging.WARNING)
 # logger.addHandler(handler)

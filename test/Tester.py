@@ -20,15 +20,18 @@ class Agent:
         self.robot = rob
         self.obj_list = [i for i in range(9, 13)]   # 9~26번, 13, 14 제거 (커넥터)
         self.obj_list += [i for i in range(21, 27)]
-        self.drawer_list =  [1, 2]       # : drawer
+        self.drawer_list = [1, 2]       # : drawer
         self.drawer_obj_list = [17, 18, 19, 20]
-        self.bin_list =     [3, 4]          # : bin
-        self.bin_obj_list = [15, 16]
-
-        self.holder_list =  [5, 6]      # : 5:green     6:black
-        self.pen_list =     [27, 28]    # : 27:namepen  28:marker
+        self.bin_list = [3, 4]          # : bin
         self.keyboard_list= [7, 8]      # : 7:black     8:pink
-        self.usb_list =     [29, 30]    # : 29:C-type   30:HDMI
+        self.bin_obj_list = [15, 16]
+        self.bottle_lid_list = [38, 39]
+        self.pen_lid_list = [31, 32, 33]
+        self.holder_list = [5, 6]      # : 5:green     6:black
+        self.pen_list = [27, 28]    # : 27:namepen  28:marker
+        self.wide_object_list = [7, 8, 34, 35, 36, 40]      # : 7:black     8:pink
+        self.usb_list = [29, 30]    # : 29:C-type   30:HDMI
+        self.cleaner_list = [37, 41]
 
         self.shuffled_list = []
 
@@ -126,6 +129,21 @@ class Agent:
                 logger.info("Current Target: {}".format(RL_Obj_List[target_cls][0]))
                 self.robot.grasp_placing_bin(target_cls, target_imgmean, target_xyz, bin_xyz)
 
+    def run_pen_lid_test(self):
+        logging.info("STARTING PEN LID OPEN TEST")
+        pen_lid_list = self.set_obj(self.pen_lid_list)
+        hasFind = True
+        for target_cls in pen_lid_list:
+            if hasFind is True:
+                self.robot.env_img_update()
+            target_xyz, mean_xy, target_pxl = self.robot.get_obj_pos(target_cls)
+            if target_xyz is None:
+                hasFind = False
+                logger.warning("Can not find {}, xyz is None.".format(RL_Obj_List[target_cls][0]))
+                continue
+            hasFind = True
+            self.robot.grasp_open_pen_lid(target_cls, target_imgmean, target_xyz)
+
     def run_penholder_test(self):
         logger.info("STARTING PENHOLDER TEST")
         holder_list = self.set_obj(self.holder_list)
@@ -160,9 +178,9 @@ class Agent:
                 self.robot.placing_toholder(h_loc)
             self.robot.holder_toplace(h_loc)
 
-    def run_keyboard_test():
+    def run_keyboard_test(self):
         logger.info("STARTING KEYBOARD TEST")
-        key_list = self.set_obj(self.keyboard_list)
+        key_list = self.set_obj(self.wide_object_list)
         hasFind = True
         for target_cls in key_list:
             if hasFind is True:
