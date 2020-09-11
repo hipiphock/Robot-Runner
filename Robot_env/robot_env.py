@@ -115,7 +115,7 @@ class Robot:
         self.robot_dual_control(rob_total_pose=self.home, vel=1.0, acc=1.0)
         self.action_gripper_both_open()
 
-        logging.warning("ROBOT ENVIRONMENT READY.")
+        logger.warning("ROBOT ENVIRONMENT READY.")
 
         # self.robot_pose_chceck()
 

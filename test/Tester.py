@@ -13,7 +13,7 @@ import logging
 import sys
 import numpy as np
 
-logger = logging.getLogger("RobotTester")
+logger = logging.getLogger("Agent")
 
 class Agent:
     def __init__(self, rob):
@@ -117,7 +117,7 @@ class Agent:
             for target_cls in obj_list:
                 if hasFind is True:
                     self.robot.env_img_update()
-                target_xyz, target_imgmean, target_pxl = rob.get_obj_pos(target_cls)
+                target_xyz, target_imgmean, target_pxl = self.robot.get_obj_pos(target_cls)
                 if target_xyz is None:
                     hasFind = False
                     logger.warning("Can not find {}, xyz is None.".format(RL_Obj_List[target_cls][0]))
