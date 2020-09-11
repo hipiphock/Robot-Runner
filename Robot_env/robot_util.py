@@ -59,7 +59,7 @@ class Robot_util:
             except:
                 logger.error("connecting failed. trying to reconnect robot {}...".format(socket_ip))
 
-        logger.info('\x1b[1;31;0m' + "-->>Robot util _ {} Ready.".format(socket_ip) + '\x1b[0m', file=sys.stderr)
+        logger.info('\x1b[1;31;0m' + "-->>Robot util _ {} Ready.".format(socket_ip) + '\x1b[0m')
 
     def chk_STA(self):  # : 20191118
         self.gripper.chk_sta_gripper()

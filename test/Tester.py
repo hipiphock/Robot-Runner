@@ -68,6 +68,7 @@ class Agent:
         logger.info("STARTING DRAWER TEST")
         drawer_xyz = None
         drawer_list = self.set_obj(self.drawer_list)
+        hasFind = True
         for target_cls in drawer_list:
             if hasFind is True:
                 self.robot.env_img_update()

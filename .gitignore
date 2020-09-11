@@ -3,3 +3,4 @@
 __pycache__/
 *.zip
 object_detection/
+.logs/*
