@@ -41,12 +41,9 @@ logger.addHandler(handler)
 
 
 class Robot:
-
     def __init__(self, socket_ip1, socket_ip2, segmentation_model=None, threshold=0.60):
-
         self.rob1 = robot_util.Robot_util(socket_ip1)
         time.sleep(1)
-
         self.rob2 = robot_util.Robot_util(socket_ip2)
         time.sleep(1)
 
@@ -71,7 +68,6 @@ class Robot:
         self.home = np.deg2rad([0.0, -90.0, 0.0, -90.0, 0.0, 0.0])
         self.initial_pose1 = np.deg2rad([-20.0, -110.0, -70.0, -90.0, 90.0, -20.0])
         self.initial_pose2 = np.deg2rad([20.0, -70.0, 70.0, -90.0, -90.0, 20.0])
-        # self.cam_position = np.deg2rad([1.195, -112.025, -6.55, -151.41, 89.66, 2.10])  # : 교체이전
         self.cam_position = np.deg2rad([0.3209, -113.0970, -4.5383, -152.3580, 89.6613, 1.2152])  # : 교체 후
 
         # Robot Dynamics & Kinematics Parameters

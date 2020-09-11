@@ -1,6 +1,6 @@
 """
 RL Data Collector
-latest Ver.180405
+latest Ver.200911
 """
 
 # Robot
@@ -24,11 +24,16 @@ from math import asin as asin
 from math import sqrt as sqrt
 from math import pi as pi
 import math3d as m3d
+import logging
 
+logger = logging.getLogger("robot_util")
+handler = logging.StreamHandler(sys.stderr)
+handler.setLevel(logging.INFO)
+logger.addHandler(handler)
 
 class Robot_util:
     def __init__(self, socket_ip):
-        print("-->> trying to connect robot")
+        logger.info("trying to connect robot")
         while True:
             try:
                 # Robot & Gripper
@@ -52,9 +57,9 @@ class Robot_util:
                 self.alp = [np.pi / 2, 0, 0, np.pi / 2, -np.pi / 2, 0]
                 break
             except:
-                print("..>> connecting failed. trying to reconnect robot {}...".format(socket_ip))
+                logger.error("connecting failed. trying to reconnect robot {}...".format(socket_ip))
 
-        print('\x1b[1;31;0m' + "-->>Robot util _ {} Ready.".format(socket_ip) + '\x1b[0m', file=sys.stderr)
+        logger.info('\x1b[1;31;0m' + "-->>Robot util _ {} Ready.".format(socket_ip) + '\x1b[0m', file=sys.stderr)
 
     def chk_STA(self):  # : 20191118
         self.gripper.chk_sta_gripper()
@@ -353,17 +358,17 @@ class Robot_util:
             if safetymode_new == "NORMAL":
                 pass
             elif safetymode_new == "PROTECTIVE_STOP":
-                print("-->>robot : Protective stopped !", file=sys.stderr)
+                logger.error("-->>robot : Protective stopped !")
                 self._program_send("unlock protective stop\n")
             elif safetymode_new == "SAFEGUARD_STOP":
-                print("-->>robot : Safeguard stopped !", file=sys.stderr)
+                logger.error("-->>robot : Safeguard stopped !")
                 self._program_send("close safety popup\n")
             elif safetymode_new == "FAULT" or safetymode_new == "VIOLATION":                                 # : 추가
-                print("-->>robot : System fault !", file=sys.stderr)
+                logger.error("-->>robot : System fault !")
                 self._program_send("restart safety\n")
             else:
-                print("-->>robot : Unreachable position self.obj_pos")
-                print(safetymode_new)
+                logger.error("-->>robot : Unreachable position self.obj_pos")
+                logger.error(safetymode_new)
             self._program_send("close safety popup\n")
 
     def status_chk(self):
@@ -397,8 +402,8 @@ class Robot_util:
                 time.sleep(5)
                 continue
             else:   # : 20200207 'NO_CONTROLLER'
-                print("-->>robot : {} robotmode fail".format(count1))
-                print(robotmode + " ... 정의되지 않은 오류")     # : 20200121 디버깅용 ##
+                logger.error("-->>robot : {} robotmode fail".format(count1))
+                logger.error(robotmode + " ... 정의되지 않은 오류")     # : 20200121 디버깅용 ##
                 continue
 
             # robotmode = self.status_robotmode()
@@ -411,17 +416,17 @@ class Robot_util:
                 if safetymode == "NORMAL" and robotmode == 'RUNNING':
                     break
                 elif safetymode == "PROTECTIVE_STOP":
-                    print("-->>robot : {} Protective stopped !".format(count1), file=sys.stderr)
+                    logger.error("-->>robot : {} Protective stopped !".format(count1))
                     self._program_send("unlock protective stop\n")
                     self._program_send("close safety popup\n")
                     time.sleep(2)
                 elif safetymode == "SAFEGUARD_STOP":
-                    print("-->>robot : {} Safeguard stopped !".format(count1), file=sys.stderr)
+                    logger.error("-->>robot : {} Safeguard stopped !".format(count1))
                     self._program_send("unlock protective stop\n")
                     self._program_send("close safety popup\n")
                     time.sleep(2)
                 elif safetymode == "FAULT" or safetymode == "VIOLATION":
-                    print("-->>robot : {} System fault !".format(count1), file=sys.stderr)
+                    logger.error("-->>robot : {} System fault !".format(count1))
                     self._program_send("unlock protective stop\n")
                     self._program_send("restart safety\n")
                     self._program_send("close safety popup\n")
@@ -429,8 +434,8 @@ class Robot_util:
                     time.sleep(2)
                     continue
                 else:
-                    print("-->>robot : {} Unreachable position self.obj_pos".format(count1))
-                    print(safetymode + " ... 정의되지 않은 오류")    # : 20200121 디버깅용 ##    IDLE 처리 필요
+                    logger.error("-->>robot : {} Unreachable position self.obj_pos".format(count1))
+                    logger.error(safetymode + " ... 정의되지 않은 오류")    # : 20200121 디버깅용 ##    IDLE 처리 필요
                     self._program_send("close safety popup\n")
                     time.sleep(5)
 
