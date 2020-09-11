@@ -493,7 +493,75 @@ class Robot:
             else:  # Short axes
                 # print("target angle & short axis : %f, %f" % (angle, w))
                 return angle, w, h
+    def scatter_move_gripper(self, start, end):
+        """
+        Easy. Move gripper toward the middle of two objects
+        TODO: get perpendicular path of start-end line
+        (start + end) / 2를 지나고, start-end에 수직인 직선
+        ortho_start, ortho_end를 지나도록 - 이 거리는 어떻게?
+         - start-end의 거리만큼 ortho_start, ortho_end
+        :return:
+        """
+        # pre-computation
+        ortho_mid = (start + end) / 2
+        distance = dist.euclidean(start[:2], end[:2]) / 2
+        ortho_start, ortho_end = [], [] # 기울기와 삼각함수로 좌표 알아내기
+        # helper
+        ortho_vector = -((end[0]-start[0])/(end[1]-start[1]))
+        # ortho_line_y = lambda x : ortho_vector*(x-ortho_mid[0])+ortho_mid[1]
+        ortho_angle = np.arctan(ortho_vector)
+        ortho_start = ortho_mid + list(3*distance*x for x in [np.cos(ortho_angle), np.sin(ortho_angle), 0])
+        ortho_end = ortho_mid - list(3*distance*x for x in [np.cos(ortho_angle), np.sin(ortho_angle), 0])
 
+        logger.info("Starting Scattering")
+        back_pose = np.deg2rad([0.0, 0.0, -90.0, -90.0, 0.0, 0.0])
+        starting_pose = np.deg2rad([90.0, -100.0, 120.0, -110.0, -90.0, 0])
+        placing_pose = np.deg2rad([90.0, -120.0, 140.0, -110.0, -90.0, 0])
+        self.robot_dual_control(rob1_pose=back_pose, rob1_vel=1.0, rob1_acc=1.0,
+                                rob2_pose=starting_pose, rob2_vel=0.75, rob2_acc=0.75)
+
+        # 로봇의 현재 위치 기록
+        rob2_loc = self.rob2.getl()
+        rob2_prev_loc = copy.deepcopy(rob2_loc)
+        # 로봇의 x좌표먼저 이동
+        rob2_loc[0] = ortho_start[0]
+        self.rob2.movel(rob2_loc, 0.5, 0.5)
+        # move to ortho_start
+        rob2_loc[1] = ortho_start[1]
+        self.rob2.movel(rob2_loc, 0.5, 0.5)
+        # handle gripper angle
+        robot_joint = self.rob2.getj()
+        if ortho_angle < -120:
+            robot_joint[5] = np.deg2rad(ortho_angle + np.rad2deg(robot_joint[0]) + 90.0)
+        elif 120 < ortho_angle:
+            robot_joint[5] = np.deg2rad(ortho_angle + np.rad2deg(robot_joint[0]) - 90.0)
+        else:
+            robot_joint[5] = np.deg2rad(ortho_angle + np.rad2deg(robot_joint[0]))
+        self.rob2.movej(robot_joint, acc=1.0, vel=1.0)
+
+        self.gripper2.close_gripper()
+        rob2_loc = self.rob2.getl()
+        rob2_loc[2] = ortho_mid[2]
+        self.rob2.movel(rob2_loc)
+        # move to ortho_mid
+        rob2_loc[0] = ortho_mid[0]
+        rob2_loc[1] = ortho_mid[1]
+        self.rob2.movel(rob2_loc, 0.5, 0.5)
+        self.gripper2.value_gripper(122)
+        # move to ortho_end
+        rob2_loc[0] = ortho_end[0]
+        rob2_loc[1] = ortho_end[1]
+        self.rob2.movel(rob2_loc, 0.5, 0.5)
+        # FINISHED, go home
+        rob2_loc[0] = ortho_start[0]
+        rob2_loc[1] = ortho_start[1]
+        self.rob2.movel(rob2_loc, 0.4, 0.4)
+        rob2_loc[2] = rob2_prev_loc[2]
+        self.rob2.movel(rob2_loc, 0.5, 0.5)
+        rob2_loc[1] = rob2_prev_loc[1]
+        self.rob2.movel(rob2_loc, 0.5, 0.5)
+        rob2_loc[0] = rob2_prev_loc[0]
+        self.rob2.movel(rob2_loc, 0.5, 0.5)
     # current problem in scattering:
     # 1. Can not find neighboring objects
     def scatter(self, target_cls, use_scatter, obj_pos=None, num_scattering=None, target_pxl=None):

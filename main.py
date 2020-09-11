@@ -65,33 +65,26 @@ class Agent:
         hasFind = True
         obj_list = self.set_obj(self.obj_list)
         for target_cls in obj_list:
-            if hasFind is True:
+            while 1:
                 rob.env_img_update()
-
-            target_xyz, target_imgmean, target_pxl = rob.get_obj_pos(target_cls)
-            if target_xyz is None:
-                hasFind = False
-                logging.warning("Can not find {}, xyz is None.".format(RL_Obj_List[target_cls][0]))
-                continue
-
-            hasFind = True
-            logging.info("Current Target: {}".format(RL_Obj_List[target_cls][0]))
-
-            # rob.scatter(target_cls, args.use_scatter, target_xyz, args.num_scattering,target_pxl)
-
-            # if target_cls in [15, 16]:  # :
-            #     rob.scatter(target_cls, args.use_scatter,_, args.num_scattering)
-            #     rob.grasp_placing_bin(target_cls)
-            # elif target_cls in range(17, 21):
-            #     rob.scatter(target_cls, args.use_scatter, args.num_scattering)
-            #     rob.grasp_placing_drawer(target_cls)
-            # else:
-            #     rob.scatter(target_cls, args.use_scatter, target_xyz, args.num_scattering, target_pxl)
-            #     rob.grasp_placing_box(target_cls, target_xyz, target_pxl)
-            #     rob.grasp_placing_box(target_cls, target_imgmean, target_xyz)
-
+                target_xyz, target_imgmean, target_pxl = rob.get_obj_pos(target_cls)
+                if target_xyz is None:
+                    logging.warning("Can not find {}, xyz is None.".format(RL_Obj_List[target_cls][0]))
+                    break
+                logging.info("Current Target: {}".format(RL_Obj_List[target_cls][0]))
+                distance_array = get_distance(self.robot.color_seg_img, self.robot.detected_obj_list)
+                check = False
+                for i in self.robot.detected_obj_list:
+                    if distance_array[target_cls][i] < 10:
+                        logging.info("Scattering Target: {}, {}".format(RL_Obj_List[target_cls][0], RL_Obj_List[i][0]))
+                        # rob.scatter_temp(target_cls, target_xyz, target_pxl)
+                        target2_xyz, _, _ = rob.get_obj_pos(i)
+                        rob.scatter_move_gripper(target_xyz, target2_xyz)
+                        check = True
+                        break
+                if check is False:
+                    break
             rob.grasp_placing_box(target_cls, target_imgmean, target_xyz)
-
         #  ---- ---- ---- ---- drawer ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
         logging.info("STARTING DRAWER TEST")
         drawer_xyz = None
