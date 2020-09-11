@@ -25,6 +25,7 @@ args = parser.parse_args()
 socket_ip1 = "192.168.0.52"  # 오른쪽 팔(카메라)
 socket_ip2 = "192.168.0.29"  # 왼쪽 팔
 
+logger = logging.getLogger("")
 
 class Agent:
 
@@ -44,7 +45,7 @@ class Agent:
 
         self.shuffled_list = []
 
-    def set_obj(self, org_list):    # :?
+    def set_obj(self, org_list):
         shuffled_list = copy.deepcopy(org_list)
         random.shuffle(shuffled_list)
         # self.shuffled_list = random.shuffle(self.obj_list)
@@ -170,18 +171,15 @@ class Agent:
             self.robot.holder_toplace(h_loc)
 
     def run_keyboard_test():
-        # ---- ---- ---- ---- Keyboard ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
         logging.info("STARTING KEYBOARD TEST")
         key_list = self.set_obj(self.keyboard_list)
         for target_cls in key_list:
             if hasFind is True:
                 self.robot.env_img_update()
-
             target_xyz, mean_xy, target_pxl = self.robot.get_obj_pos(target_cls)
             if target_xyz is None:
                 hasFind = False
                 logging.warning("Can not find {}, xyz is None.".format(RL_Obj_List[target_cls][0]))
                 continue
-
             hasFind = True
             self.robot.grasp_placing_keyboard(target_cls, mean_xy)
