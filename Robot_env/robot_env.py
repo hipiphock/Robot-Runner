@@ -100,6 +100,8 @@ class Robot:
         self.start_pt = [0, 0]
         self.end_pt = [0, 0]
 
+        self.detected_obj_list = []
+
         # Variables
         self.default_tcp = [0, 0, 0.153, 0, 0, 0]  # (x, y, z, rx, ry, rz)
         self.done = False

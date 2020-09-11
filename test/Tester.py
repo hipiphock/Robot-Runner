@@ -1,7 +1,9 @@
 import argparse
-
+import sys
+import os 
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 from Robot_env import robot_env
-# from segmentation import segmentation_graph
+from Robot_env.scattering_easy import get_distance as get_distance
 from object_detection import Seg_detector
 from Robot_env.config import RL_Obj_List
 import random

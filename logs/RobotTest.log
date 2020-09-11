@@ -1,0 +1,239 @@
+WARNING:ursecmon:tried 11 times to find a packet in data, advertised packet size: -2, type: 3
+WARNING:ursecmon:Data length: 44
+WARNING:ursecmon:tried 11 times to find a packet in data, advertised packet size: -2, type: 3
+WARNING:ursecmon:Data length: 68
+WARNING:ursecmon:tried 11 times to find a packet in data, advertised packet size: -2, type: 3
+WARNING:ursecmon:Data length: 1092
+WARNING:ursecmon:tried 11 times to find a packet in data, advertised packet size: -2, type: 3
+WARNING:ursecmon:Data length: 1420
+INFO:ursecmon:Remove 79 bytes of garbage at begining of packet
+INFO:urx:Opening real-time monitor socket
+INFO:urx:Sending program: def myProg():
+	socket_close("gripper_socket")
+	socket_open("127.0.0.1",63352,"gripper_socket")
+	set_analog_inputrange(0,0)
+	set_analog_inputrange(1,0)
+	set_analog_inputrange(2,0)
+	set_analog_inputrange(3,0)
+	set_analog_outputdomain(0,0)
+	set_analog_outputdomain(1,0)
+	set_tool_voltage(0)
+	set_runstate_outputs([])
+	set_payload(0.85)
+	socket_set_var("SPE",255,"gripper_socket")
+	sync()
+	socket_set_var("FOR",50,"gripper_socket")
+	sync()
+	sleep(0.1)
+	socket_set_var("POS",0,"gripper_socket")
+	sync()
+	sleep(2.0)
+end
+WARNING:ursecmon:tried 11 times to find a packet in data, advertised packet size: -2, type: 3
+WARNING:ursecmon:Data length: 68
+WARNING:ursecmon:tried 11 times to find a packet in data, advertised packet size: -2, type: 3
+WARNING:ursecmon:Data length: 1092
+WARNING:ursecmon:tried 11 times to find a packet in data, advertised packet size: -2, type: 3
+WARNING:ursecmon:Data length: 1420
+INFO:ursecmon:Remove 79 bytes of garbage at begining of packet
+INFO:urx:Opening real-time monitor socket
+INFO:urx:Sending program: def myProg():
+	socket_close("gripper_socket")
+	socket_open("127.0.0.1",63352,"gripper_socket")
+	set_analog_inputrange(0,0)
+	set_analog_inputrange(1,0)
+	set_analog_inputrange(2,0)
+	set_analog_inputrange(3,0)
+	set_analog_outputdomain(0,0)
+	set_analog_outputdomain(1,0)
+	set_tool_voltage(0)
+	set_runstate_outputs([])
+	set_payload(0.85)
+	socket_set_var("SPE",255,"gripper_socket")
+	sync()
+	socket_set_var("FOR",50,"gripper_socket")
+	sync()
+	sleep(0.1)
+	socket_set_var("POS",0,"gripper_socket")
+	sync()
+	sleep(2.0)
+end
+INFO:urx:Sending program: set_tcp(p[0, 0, 0.153, 0, 0, 0])
+INFO:urx:Sending program: set_tcp(p[0, 0, 0.153, 0, 0, 0])
+INFO:urx:Sending program: movej([0.0,-1.570796,0.0,-1.570796,0.0,0.0], a=1.0, v=1.0, r=0)
+INFO:urx:Sending program: movej([0.0,-1.570796,0.0,-1.570796,0.0,0.0], a=1.0, v=1.0, r=0)
+INFO:urx:Sending program: def myProg():
+	socket_close("gripper_socket")
+	socket_open("127.0.0.1",63352,"gripper_socket")
+	set_analog_inputrange(0,0)
+	set_analog_inputrange(1,0)
+	set_analog_inputrange(2,0)
+	set_analog_inputrange(3,0)
+	set_analog_outputdomain(0,0)
+	set_analog_outputdomain(1,0)
+	set_tool_voltage(0)
+	set_runstate_outputs([])
+	set_payload(0.85)
+	socket_set_var("SPE",255,"gripper_socket")
+	sync()
+	socket_set_var("FOR",50,"gripper_socket")
+	sync()
+	sleep(0.1)
+	socket_set_var("POS",0,"gripper_socket")
+	sync()
+	sleep(1.0)
+end
+INFO:urx:Sending program: def myProg():
+	socket_close("gripper_socket")
+	socket_open("127.0.0.1",63352,"gripper_socket")
+	set_analog_inputrange(0,0)
+	set_analog_inputrange(1,0)
+	set_analog_inputrange(2,0)
+	set_analog_inputrange(3,0)
+	set_analog_outputdomain(0,0)
+	set_analog_outputdomain(1,0)
+	set_tool_voltage(0)
+	set_runstate_outputs([])
+	set_payload(0.85)
+	socket_set_var("SPE",255,"gripper_socket")
+	sync()
+	socket_set_var("FOR",50,"gripper_socket")
+	sync()
+	sleep(0.1)
+	socket_set_var("POS",0,"gripper_socket")
+	sync()
+	sleep(1.0)
+end
+WARNING:root:ROBOT ENVIRONMENT READY.
+INFO:root:STARTING PICKING TEST
+INFO:urx:Sending program: movej([0.005601,-1.973915,-0.079208,-2.659149,1.564885,0.021209], a=1.0, v=1.0, r=0)
+WARNING:root:Can not find Box_small, xyz is None.
+WARNING:Robot:target_position is None.
+INFO:urx:Sending program: movej([0.005601,-1.973915,-0.079208,-2.659149,1.564885,0.021209], a=1.0, v=1.0, r=0)
+WARNING:root:Can not find Cup_red, xyz is None.
+WARNING:Robot:target_position is None.
+INFO:urx:Sending program: movej([0.005601,-1.973915,-0.079208,-2.659149,1.564885,0.021209], a=1.0, v=1.0, r=0)
+WARNING:root:Can not find Stapler_pink, xyz is None.
+WARNING:Robot:target_position is None.
+INFO:urx:Sending program: movej([0.005601,-1.973915,-0.079208,-2.659149,1.564885,0.021209], a=1.0, v=1.0, r=0)
+WARNING:root:Can not find Glue_stick, xyz is None.
+WARNING:Robot:target_position is None.
+INFO:urx:Sending program: movej([0.005601,-1.973915,-0.079208,-2.659149,1.564885,0.021209], a=1.0, v=1.0, r=0)
+WARNING:root:Can not find Tape_white, xyz is None.
+WARNING:Robot:target_position is None.
+INFO:urx:Sending program: movej([0.005601,-1.973915,-0.079208,-2.659149,1.564885,0.021209], a=1.0, v=1.0, r=0)
+INFO:root:Current Target: Glue_pen
+WARNING:ursecmon:tried 11 times to find a packet in data, advertised packet size: -2, type: 3
+WARNING:ursecmon:Data length: 68
+WARNING:ursecmon:tried 11 times to find a packet in data, advertised packet size: -2, type: 3
+WARNING:ursecmon:Data length: 1092
+WARNING:ursecmon:tried 11 times to find a packet in data, advertised packet size: -2, type: 3
+WARNING:ursecmon:Data length: 1420
+INFO:ursecmon:Remove 79 bytes of garbage at begining of packet
+INFO:urx:Opening real-time monitor socket
+INFO:urx:Sending program: def myProg():
+	socket_close("gripper_socket")
+	socket_open("127.0.0.1",63352,"gripper_socket")
+	set_analog_inputrange(0,0)
+	set_analog_inputrange(1,0)
+	set_analog_inputrange(2,0)
+	set_analog_inputrange(3,0)
+	set_analog_outputdomain(0,0)
+	set_analog_outputdomain(1,0)
+	set_tool_voltage(0)
+	set_runstate_outputs([])
+	set_payload(0.85)
+	socket_set_var("SPE",255,"gripper_socket")
+	sync()
+	socket_set_var("FOR",50,"gripper_socket")
+	sync()
+	sleep(0.1)
+	socket_set_var("POS",0,"gripper_socket")
+	sync()
+	sleep(2.0)
+end
+WARNING:ursecmon:tried 11 times to find a packet in data, advertised packet size: -2, type: 3
+WARNING:ursecmon:Data length: 68
+WARNING:ursecmon:tried 11 times to find a packet in data, advertised packet size: -2, type: 3
+WARNING:ursecmon:Data length: 1092
+WARNING:ursecmon:tried 11 times to find a packet in data, advertised packet size: -2, type: 3
+WARNING:ursecmon:Data length: 1420
+INFO:ursecmon:Remove 79 bytes of garbage at begining of packet
+INFO:urx:Opening real-time monitor socket
+INFO:urx:Sending program: def myProg():
+	socket_close("gripper_socket")
+	socket_open("127.0.0.1",63352,"gripper_socket")
+	set_analog_inputrange(0,0)
+	set_analog_inputrange(1,0)
+	set_analog_inputrange(2,0)
+	set_analog_inputrange(3,0)
+	set_analog_outputdomain(0,0)
+	set_analog_outputdomain(1,0)
+	set_tool_voltage(0)
+	set_runstate_outputs([])
+	set_payload(0.85)
+	socket_set_var("SPE",255,"gripper_socket")
+	sync()
+	socket_set_var("FOR",50,"gripper_socket")
+	sync()
+	sleep(0.1)
+	socket_set_var("POS",0,"gripper_socket")
+	sync()
+	sleep(2.0)
+end
+INFO:urx:Sending program: set_tcp(p[0, 0, 0.153, 0, 0, 0])
+INFO:urx:Sending program: set_tcp(p[0, 0, 0.153, 0, 0, 0])
+INFO:urx:Sending program: movej([0.0,-1.570796,0.0,-1.570796,0.0,0.0], a=1.0, v=1.0, r=0)
+INFO:urx:Sending program: movej([0.0,-1.570796,0.0,-1.570796,0.0,0.0], a=1.0, v=1.0, r=0)
+INFO:urx:Sending program: def myProg():
+	socket_close("gripper_socket")
+	socket_open("127.0.0.1",63352,"gripper_socket")
+	set_analog_inputrange(0,0)
+	set_analog_inputrange(1,0)
+	set_analog_inputrange(2,0)
+	set_analog_inputrange(3,0)
+	set_analog_outputdomain(0,0)
+	set_analog_outputdomain(1,0)
+	set_tool_voltage(0)
+	set_runstate_outputs([])
+	set_payload(0.85)
+	socket_set_var("SPE",255,"gripper_socket")
+	sync()
+	socket_set_var("FOR",50,"gripper_socket")
+	sync()
+	sleep(0.1)
+	socket_set_var("POS",0,"gripper_socket")
+	sync()
+	sleep(1.0)
+end
+INFO:urx:Sending program: def myProg():
+	socket_close("gripper_socket")
+	socket_open("127.0.0.1",63352,"gripper_socket")
+	set_analog_inputrange(0,0)
+	set_analog_inputrange(1,0)
+	set_analog_inputrange(2,0)
+	set_analog_inputrange(3,0)
+	set_analog_outputdomain(0,0)
+	set_analog_outputdomain(1,0)
+	set_tool_voltage(0)
+	set_runstate_outputs([])
+	set_payload(0.85)
+	socket_set_var("SPE",255,"gripper_socket")
+	sync()
+	socket_set_var("FOR",50,"gripper_socket")
+	sync()
+	sleep(0.1)
+	socket_set_var("POS",0,"gripper_socket")
+	sync()
+	sleep(1.0)
+end
+WARNING:root:ROBOT ENVIRONMENT READY.
+INFO:root:STARTING PICKING TEST
+INFO:urx:Sending program: movej([0.005601,-1.973915,-0.079208,-2.659149,1.564885,0.021209], a=1.0, v=1.0, r=0)
+WARNING:root:Can not find Stapler_stan, xyz is None.
+WARNING:Robot:target_position is None.
+INFO:urx:Sending program: movej([0.005601,-1.973915,-0.079208,-2.659149,1.564885,0.021209], a=1.0, v=1.0, r=0)
+WARNING:root:Can not find Glue_stick, xyz is None.
+WARNING:Robot:target_position is None.
+INFO:urx:Sending program: movej([0.005601,-1.973915,-0.079208,-2.659149,1.564885,0.021209], a=1.0, v=1.0, r=0)
+INFO:root:Current Target: Glue_pen
