@@ -2,5 +2,5 @@
 .vscode/
 __pycache__/
 *.zip
-object_detection/
+object_detection/frozen_graph/
 .logs/*
