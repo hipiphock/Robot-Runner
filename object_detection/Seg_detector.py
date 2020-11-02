@@ -183,3 +183,88 @@ class Segment:
         print("time spend : {:07.4f} ... convert_color_seg".format(t2-t1))
         return np.copy(color_label)
 
+    def emphasize_target(self, image, target_obj, threshold=0.60):
+        """
+        Emphasizes current target in color segment image display.
+        Image must be color segment image.
+        """
+        # TODO: make color_seg_image label current working target.
+        image_copybgr = image.copy()[..., ::-1]
+        output_dict = self.run_inference_for_single_image(image_copybgr)
+        boxes = output_dict['detection_boxes']
+        classes = output_dict['detection_classes']
+        scores = output_dict['detection_scores']
+        masks = output_dict.get('detection_masks')
+
+        idx = np.where(scores >= threshold)
+        classes = classes[idx]              # this is an array of objects that is detected
+        masks = masks[idx]
+        # boxes = boxes[idx]
+
+        # target object를 masking하는 과정
+        [obj_masknum, height, width] = masks.shape
+        seg = np.zeros((height, width), dtype=np.uint8)
+        for x, i in enumerate(classes):
+            idx = np.where(masks[x] != 0)
+            seg[idx] = i
+
+        # changed code snippet from convert_color_seg
+        height = seg.shape[0]
+        width = seg.shape[1]
+        channel = IMAGE_CHANNEL
+
+        shape = (height, width, channel)
+        color_label = np.zeros(shape=shape, dtype=np.uint8)
+
+        list0 = np.where(seg == target_obj)
+        color = RL_Obj_List[target_obj][1]
+        color_label[list0[0], list0[1]] = color
+
+        color_label = cv2.resize(color_label, (int(shape[1] / 2), int(shape[0] / 2)))
+        cv2.imshow("color_seg_show", color_label)
+        cv2.moveWindow("color_seg_show", 0, 390)
+        cv2.waitKey(1)
+
+
+    def emphasize_targets(self, image, target_obj_list, threshold=0.60):
+        """
+        Emphasizes current target in color segment image display.
+        Image must be color segment image.
+        """
+        # TODO: make color_seg_image label current working target.
+        image_copybgr = image.copy()[..., ::-1]
+        output_dict = self.run_inference_for_single_image(image_copybgr)
+        boxes = output_dict['detection_boxes']
+        classes = output_dict['detection_classes']
+        scores = output_dict['detection_scores']
+        masks = output_dict.get('detection_masks')
+
+        idx = np.where(scores >= threshold)
+        classes = classes[idx]  # this is an array of objects that is detected
+        masks = masks[idx]
+        # boxes = boxes[idx]
+
+        # target object를 masking하는 과정
+        [obj_masknum, height, width] = masks.shape
+        seg = np.zeros((height, width), dtype=np.uint8)
+        for x, i in enumerate(classes):
+            idx = np.where(masks[x] != 0)
+            seg[idx] = i
+
+        # changed code snippet from convert_color_seg
+        height = seg.shape[0]
+        width = seg.shape[1]
+        channel = IMAGE_CHANNEL
+
+        shape = (height, width, channel)
+        color_label = np.zeros(shape=shape, dtype=np.uint8)
+
+        for target_obj in target_obj_list:
+            list0 = np.where(seg == target_obj)
+            color = RL_Obj_List[target_obj][1]
+            color_label[list0[0], list0[1]] = color
+
+        color_label = cv2.resize(color_label, (int(shape[1] / 2), int(shape[0] / 2)))
+        cv2.imshow("color_seg_show", color_label)
+        cv2.moveWindow("color_seg_show", 0, 390)
+        cv2.waitKey(1)
