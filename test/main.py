@@ -35,6 +35,8 @@ if __name__ == "__main__":
 
     agent.run_bin_test()
 
+    agent.run_bottle_test()
+
     agent.run_pen_lid_test()
     
     agent.run_penholder_test()

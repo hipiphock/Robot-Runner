@@ -197,6 +197,7 @@ class Robot:
     def env_img_update(self):
         self.rob1.movej(self.cam_position, 1.0, 1.0)
         self.env_img = self.global_cam.capture()
+        self.original_image = copy.deepcopy(self.env_img)
         self.seg_img, self.color_seg_img, _ = self.seg_model.total_run(self.env_img, self.seg_threshold)
 
         env_img_shape = self.env_img.shape
@@ -1378,21 +1379,22 @@ class Robot:
                                         rob2_pose=rob2_starting_pose, rob2_vel=0.75, rob2_acc=0.75)
                 
 
-    def grasp_open_bottle_lid(self, target_cls, mean_xy, obj_pos=None):
+        def grasp_open_bottle_lid(self, target_cls, mean_xy, obj_pos=None):
         """
         Grab pen by rob2, and take the lid by rob1.
         :param mean_xy:
         :return:
         """
+        # TODO: grey bottle이 말썽 - 고치기
         if obj_pos is None:
-            logging.warning("sys : target_pos is None")
+            logger.warning("sys : object_pos is None")
             return
         else:
-            target_pos = copy.deepcopy(obj_pos)
-            logging.info("target_pos : {}".format(target_pos))
+            target_pose = copy.deepcopy(obj_pos)
+            logger.info("target_pose : {}".format(target_pose))
 
-            if (self.x_boundary[0] < target_pos[0] < self.x_boundary[1]) and (
-                    self.y_boundary[0] < target_pos[1] < self.y_boundary[1]):
+            if (self.x_boundary[0] < target_pose[0] < self.x_boundary[1]) and (
+                    self.y_boundary[0] < target_pose[1] < self.y_boundary[1]):
                 rob1_starting_pose = np.deg2rad([-90.0, -80.0, -120.0, -70.0, 90.0, 0])
                 rob1_back_pose = np.deg2rad([0.0, 0.0, -90.0, -90.0, 0.0, 0.0])
                 rob2_starting_pose = np.deg2rad([90.0, -100.0, 120.0, -110.0, -90.0, 0])
@@ -1403,15 +1405,15 @@ class Robot:
                 # STEP 1: Grap bottle lid by rob2
                 # 로봇의 현재 위치 기록
                 rob2_loc = self.rob2.getl()
-                rob2_loc[0] = rob2_loc[0] - 0.0015
+                rob2_loc[0] = rob2_loc[0]
                 rob2_preloc = copy.deepcopy(rob2_loc)
                 # 로봇의 x좌표먼저 이동
-                rob2_preloc[0] = target_pos[0] + 0.05
+                rob2_preloc[0] = target_pose[0] + 0.05
                 self.rob2.movel(rob2_preloc, 0.5, 0.5)
 
                 # 타겟 좌표로 이동
                 rob2_loc[0] = rob2_preloc[0]
-                rob2_loc[1] = target_pos[1] + 0.01
+                rob2_loc[1] = target_pose[1]
                 self.rob2.movel(rob2_loc, 0.5, 0.5)
                 robot_loc_after = self.rob2.getl()
                 robot_loc_after[2] -= 0.05
@@ -1420,17 +1422,23 @@ class Robot:
                 self.rob2.movel(rob2_loc, 0.5, 0.5)
 
                 # movel 함수로 중앙으로 이동
-                rob2_center_joint = np.deg2rad([-27.08, -76.78, 103.95, -117.91, -89.17, 0.00])
-                self.rob2.movej(rob2_center_joint, 0.3, 0.3)
+                rob2_center_joint = np.deg2rad([-27.08, -76.78, 103.95, -117.91, -89.17, 180.00])   # 불안불안
+                rob2_return_joint = np.deg2rad([-27.08, -76.78, 103.95, -117.91, -89.17, 0.00])  # 불안불안
+                self.rob2.movej(rob2_center_joint, 0.6, 0.6)
                 temp_loc = self.rob2.getl()
 
                 # STEP 2: Grap center point of bottle by rob1
                 rob1_mid_pos2 = np.deg2rad([-39.00, -113.35, -122.70, -114.19, -177.21, 9.52])
-                rob1_holding_pos = np.deg2rad([-3.01, -121.97, -123.85, -112.72, -140.44, 0.34])
+                # rob1_holding_pos = np.deg2rad([-5.11, -125.14, -122.63, -103.43, -148.46, 9.74])
+                # tighter grabbing position
+                rob1_holding_pos = np.deg2rad([-3.88, -125.68, -121.21, -107.18, -145.80, 4.92])
                 self.rob1.movej(self.home, 0.6, 0.6)
                 self.rob1.movej(rob1_mid_pos2, 0.4, 0.4)
                 self.rob1.movej(rob1_holding_pos, 0.5, 0.5)
+                self.gripper2.open_gripper()
+                time.sleep(5.0)
                 self.gripper1.close_gripper()
+                self.gripper2.close_gripper()
 
                 # STEP 3: Open the lid of bottle by rob1
                 rob2_open_joint = np.deg2rad([-27.08, -76.98, 103.70, -117.45, -89.16, -240.00])
@@ -1441,7 +1449,7 @@ class Robot:
                 self.rob2.movel(rob2_loc, 0.4, 0.4)
                 rob2_loc[2] -= 0.051
                 self.rob2.movel(rob2_loc, 0.4, 0.4)
-                self.rob2.movej(rob2_center_joint, 0.5, 0.5)  # 뚜껑 닫기
+                self.rob2.movej(rob2_return_joint, 0.5, 0.5)  # 뚜껑 닫기
 
                 self.gripper1.open_gripper()
                 self.rob1.movej(rob1_mid_pos2, 0.4, 0.4)

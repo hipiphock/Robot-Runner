@@ -42,29 +42,39 @@ class Agent:
         return shuffled_list
 
     def run_object_picking_test(self):
-        logger.info("STARTING PICKING TEST")
-        hasFind = True
+        NEEDS_UPDATE = True
         obj_list = self.set_obj(self.obj_list)
         for target_cls in obj_list:
-            while 1:
+            if NEEDS_UPDATE:
                 self.robot.env_img_update()
-                target_xyz, target_imgmean, target_pxl = self.robot.get_obj_pos(target_cls)
-                if target_xyz is None:
-                    logger.warning("Can not find {}, xyz is None.".format(RL_Obj_List[target_cls][0]))
-                    break
-                logger.info("Current Target: {}".format(RL_Obj_List[target_cls][0]))
+            target_xyz, target_imgmean, target_pxl = self.robot.get_obj_pos(target_cls)
+            if target_xyz is None:
+                NEEDS_UPDATE = False
+                logger.warning("Could not find {}, target xyz is None.".format(RL_Obj_List[target_cls][0]))
+                continue
+            # check whether it needs scattering or not
+            NEEDS_SCATTERING = True
+            while NEEDS_SCATTERING:
                 distance_array = get_distance(self.robot.color_seg_img, self.robot.detected_obj_list)
-                check = False
-                for i in self.robot.detected_obj_list:
-                    if distance_array[target_cls][i] < 10:
-                        logger.info("Scattering Target: {}, {}".format(RL_Obj_List[target_cls][0], RL_Obj_List[i][0]))
-                        target2_xyz, _, _ = self.robot.get_obj_pos(i)
+                for detected_obj in self.robot.detected_obj_list:
+                    # target_cls가 완전히 집을 수 있는 상태가 될 때까지 scattering을 한다.
+                    if distance_array[target_cls][detected_obj] < 9:
+                        logger.info("Scattering Target: {}, {}".format(RL_Obj_List[target_cls][0], RL_Obj_List[detected_obj][0]))
+                        target2_xyz, _, _ = self.robot.get_obj_pos(detected_obj)
+                        target_list = [target_cls, detected_obj]
+                        self.robot.seg_model.emphasize_targets(self.robot.original_image, target_list)
                         self.robot.scatter_move_gripper(target_xyz, target2_xyz)
-                        check = True
+                        NEEDS_UPDATE = True
                         break
-                if check is False:
-                    break
-            self.robot.grasp_placing_box(target_cls, target_imgmean, target_xyz)
+                    NEEDS_SCATTERING = False
+                if NEEDS_UPDATE:
+                    self.robot.env_img_update()
+                    NEEDS_UPDATE = False
+            if target_cls in self.picking_obj_list:
+                logger.info("Current Target: {}".format(RL_Obj_List[target_cls][0]))
+                self.robot.seg_model.emphasize_target(self.robot.original_image, target_cls)
+                self.robot.grasp_placing_box(target_cls, target_imgmean, target_xyz)
+                NEEDS_UPDATE = True
     
     def run_drawer_test(self):
         logger.info("STARTING DRAWER TEST")
@@ -97,6 +107,7 @@ class Agent:
 
                 hasFind = True
                 logger.info("Current Target: {}".format(RL_Obj_List[target_cls][0]))
+                self.robot.seg_model.emphasize_target(self.robot.original_image, target_cls)
                 self.robot.grasp_placing_drawer(target_cls, target_imgmean, target_xyz)
                 self.robot.open_drawer(drawer_xyz)
                 self.robot.grasp_place_drawer_obj(drawer_xyz)
@@ -126,7 +137,25 @@ class Agent:
                     continue
                 hasFind = True
                 logger.info("Current Target: {}".format(RL_Obj_List[target_cls][0]))
+                self.robot.seg_model.emphasize_target(self.robot.original_image, target_cls)
                 self.robot.grasp_placing_bin(target_cls, target_imgmean, target_xyz, bin_xyz)
+    
+    def run_bottle_test(self):
+        logging.info("STARTING BOTTLE LID TEST")
+        bottle_lid_list = self.set_obj(self.bottle_lid_list)
+        hasFind = True
+        for target_cls in bottle_lid_list:
+            if hasFind is True:
+                self.robot.env_img_update()
+            target_xyz, mean_xy, target_pxl = self.robot.get_obj_pos(target_cls)
+            if target_xyz is None:
+                hasFind = False
+                logger.warning("Can not find {}, xyz is None.".format(RL_Obj_List[target_cls][0]))
+                continue
+            hasFind = True
+            self.robot.seg_model.emphasize_target(self.robot.original_image, target_cls)
+            self.robot.grasp_open_bottle_lid(target_cls, target_imgmean, target_xyz)
+
 
     def run_pen_lid_test(self):
         logging.info("STARTING PEN LID OPEN TEST")
@@ -141,6 +170,7 @@ class Agent:
                 logger.warning("Can not find {}, xyz is None.".format(RL_Obj_List[target_cls][0]))
                 continue
             hasFind = True
+            self.robot.seg_model.emphasize_target(self.robot.original_image, target_cls)
             self.robot.grasp_open_pen_lid(target_cls, target_imgmean, target_xyz)
 
     def run_penholder_test(self):
@@ -173,6 +203,7 @@ class Agent:
                     continue
                 hasFind = True
                 logger.info("Current Target: {}".format(RL_Obj_List[target_cls][0]))
+                self.robot.seg_model.emphasize_target(self.robot.original_image, target_cls)
                 self.robot.grasp_pen(target_cls, target_xyz)
                 self.robot.placing_toholder(h_loc)
             self.robot.holder_toplace(h_loc)
@@ -190,4 +221,5 @@ class Agent:
                 logger.warning("Can not find {}, xyz is None.".format(RL_Obj_List[target_cls][0]))
                 continue
             hasFind = True
+            self.robot.seg_model.emphasize_target(self.robot.original_image, target_cls)
             self.robot.grasp_placing_keyboard(target_cls, mean_xy)
